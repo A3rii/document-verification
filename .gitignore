@@ -1,0 +1,42 @@
+# General
+*.log
+*.env
+.DS_Store
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS-specific
+Thumbs.db
+ehthumbs.db
+
+# Frontend - doc-frontend (React, Vite, Next.js, etc.)
+doc-frontend/node_modules/
+doc-frontend/.next/
+doc-frontend/.vercel/
+doc-frontend/dist/
+doc-frontend/.env.local
+doc-frontend/.env
+doc-frontend/.env.production
+doc-frontend/.cache/
+
+# Backend - backend (Node.js, Express, Laravel, etc.)
+backend/node_modules/
+backend/vendor/
+backend/storage/
+backend/.env
+backend/.env.local
+
+# Smart Contracts - smart-contracts (Hardhat, Foundry, Truffle, etc.)
+smart-contracts/node_modules/
+smart-contracts/artifacts/
+smart-contracts/cache/
+smart-contracts/out/
+smart-contracts/.env
+smart-contracts/.openzeppelin/
