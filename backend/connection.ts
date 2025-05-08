@@ -15,12 +15,13 @@ async function main() {
 
     // Create a wallet with identity
     const walletPath = path.join(process.cwd(), "fabric-connection/wallet");
+
     const wallet = await Wallets.newFileSystemWallet(walletPath);
 
     const identity = await wallet.get("appUser");
 
     if (!identity) {
-      console.log('Identity "appUser" not found in wallet');
+      console.log("Identity user  not found in wallet");
       return;
     }
 
@@ -32,12 +33,18 @@ async function main() {
       discovery: { enabled: true, asLocalhost: true },
     });
 
-    const network = await gateway.getNetwork("document");
+    const network = await gateway.getNetwork("mychannel");
+
+    // folder where u  store the smart contract
     const contract = network.getContract("basic");
+    const initLedger = await contract.submitTransaction("InitLedger");
+
+    console.log("Ledger Init Successfully" + initLedger);
 
     const result = await contract.evaluateTransaction("GetAllAssets");
-    console.log(`Transaction successful, result: ${result.toString()}`);
 
+    const jsonResult = JSON.parse(result.toString());
+    console.log("Transaction successful, result:", jsonResult);
     gateway.disconnect();
   } catch (error) {
     console.error(`Error: ${error}`);
