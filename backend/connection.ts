@@ -36,7 +36,7 @@ async function main() {
     const network = await gateway.getNetwork("mychannel");
 
     // folder where u  store the smart contract
-    const contract = network.getContract("basic");
+    const contract = network.getContract("ledger");
     const initLedger = await contract.submitTransaction("InitLedger");
 
     console.log("Ledger Init Successfully" + initLedger);
