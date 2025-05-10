@@ -18,6 +18,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/api", document);
+app.use("/api/v1/document", document);
 
 export default app;
