@@ -13,6 +13,8 @@ export interface DocumentPayload {
   issueDate: string;
   ownerId: string;
   docHash: string;
+  docSignature: string;
   status: string;
   metadata: StudentMeta[];
+  docType: string;
 }

@@ -33,7 +33,7 @@ async function main() {
       discovery: { enabled: true, asLocalhost: true },
     });
 
-    const network = await gateway.getNetwork("mychannel");
+    const network = await gateway.getNetwork("document");
 
     // folder where u  store the smart contract
     const contract = network.getContract("ledger");

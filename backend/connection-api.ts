@@ -21,7 +21,7 @@ const connectToNetwork = async () => {
     discovery: { enabled: true, asLocalhost: true },
   });
 
-  const network = await gateway.getNetwork("mychannel");
+  const network = await gateway.getNetwork("document");
   const contract = network.getContract("ledger");
 
   return { gateway, contract };

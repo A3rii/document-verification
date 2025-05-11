@@ -15,8 +15,17 @@ const postingDocument = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { id, issuer, issueDate, ownerId, docHash, status, metadata } =
-      req.body;
+    const {
+      id,
+      issuer,
+      issueDate,
+      ownerId,
+      docHash,
+      docSignature,
+      status,
+      metadata,
+      docType,
+    } = req.body;
     const { gateway, contract } = await connectToNetwork();
 
     if (
@@ -25,8 +34,10 @@ const postingDocument = async (
       !issueDate ||
       !ownerId ||
       !docHash ||
+      !docSignature ||
       !status ||
-      !metadata
+      !metadata ||
+      !docType
     ) {
       res.status(BADREQUEST).json({ message: "Missing Field Required" });
     }
@@ -43,8 +54,10 @@ const postingDocument = async (
       issueDate,
       ownerId,
       docHash,
+      docSignature,
       status,
-      JSON.stringify(metadata)
+      JSON.stringify(metadata),
+      docType
     );
 
     gateway.disconnect();
@@ -161,7 +174,6 @@ const getDocumentByStatus = async (
     // Change from req.params to req.query
     const { status } = req.params;
 
-
     if (typeof status !== "string") {
       res.status(BADREQUEST).json({
         error: "status must be provided as a string",
@@ -215,5 +227,5 @@ export {
   documentVerification,
   getDocumentByStudentName,
   getDocumentByStatus,
-  getDocByStudentId 
+  getDocByStudentId,
 };
