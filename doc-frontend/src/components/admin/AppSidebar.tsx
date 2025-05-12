@@ -68,7 +68,7 @@ export default function AppSidebar() {
             </div>
           </div>
           <div className="flex flex-col items-center justify-center">
-            <h1 className="text-md lg:text-nowrap font-bold text-[#b8272c] bg-clip-text">
+            <h1 className="text-md lg:text-nowrap font-bold text-custom-primary bg-clip-text ">
               RUPP
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ export default function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url}>
-                      <item.icon className="text-[#b8272c]" />
+                      <item.icon className="text-custom-primary" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -111,7 +111,7 @@ export default function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="gap-3 px-3 py-2.5">
                     <Link to={item.url}>
-                      <item.icon className="h-5 w-5 text-[#b8272c]" />
+                      <item.icon className="h-5 w-5 text-custom-primary" />
                       <span className="text-sm">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -127,7 +127,7 @@ export default function AppSidebar() {
         <button
           onClick={() => setIsProfileOpen(!isProfileOpen)}
           className="flex w-full items-center gap-3 rounded-lg p-3 transition-colors  hover:bg-gray-200">
-          <div className="relative h-10 w-10 overflow-hidden rounded-full bg-[#b8272c]">
+          <div className="relative h-10 w-10 overflow-hidden rounded-full bg-primary">
             <img
               src="/api/placeholder/40/40"
               alt="User"
