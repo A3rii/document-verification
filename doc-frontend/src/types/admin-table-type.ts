@@ -9,3 +9,23 @@ export type DocumentVerification = {
   status: "verified" | "revoked";
   documentType: string;
 };
+
+export interface StudentMeta {
+  name: string;
+  sex: string;
+  dob: string;
+  major: string;
+  gpa: number;
+  overall_grade: string;
+}
+export interface DocumentItems {
+  ID: string;
+  docType: string;
+  IssueDate: string;
+  Issuer: string;
+  OwenrId: string;
+  DocHash: string;
+  DocSignature: string;
+  Status: string;
+  MetaData: StudentMeta[];
+}

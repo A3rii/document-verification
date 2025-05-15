@@ -11,7 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, Check, X, Sheet } from "lucide-react";
-
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "./../../../components/ui/button";
 import { Input } from "./../../../components/ui/input";
 import {
@@ -23,13 +23,13 @@ import {
   TableRow,
 } from "./../../../components/ui/table";
 import { Badge } from "./../../../components/ui/badge";
-import { DocumentVerification } from "./../../../types/admin-table-type";
-import { data } from "./../../../data/document-mock";
+import { DocumentItems, StudentMeta } from "./../../../types/admin-table-type";
+import { getAllDocument } from "../../../services/document-service/get-all-doc";
 import DocumentDialog from "../../../components/admin/DocumentDialog";
 
-const columns: ColumnDef<DocumentVerification>[] = [
+const columns: ColumnDef<DocumentItems>[] = [
   {
-    accessorKey: "certificateNumber",
+    accessorKey: "ID",
     header: ({ column }) => {
       return (
         <div className="flex justify-center">
@@ -38,43 +38,48 @@ const columns: ColumnDef<DocumentVerification>[] = [
             onClick={() =>
               column.toggleSorting(column.getIsSorted() === "asc")
             }>
-            Certificate Number
+            Document ID
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         </div>
       );
     },
     cell: ({ row }) => (
-      <div className="font-medium text-center">
-        {row.getValue("certificateNumber")}
-      </div>
+      <div className="font-medium text-center">{row.getValue("ID")}</div>
     ),
   },
   {
-    accessorKey: "studentName",
-    header: "Student Name",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("studentName")}</div>
-    ),
+    accessorKey: "MetaData",
+    header: "Student Name", 
+    cell: ({ row }) => {
+      const metadata = row.getValue("MetaData") as StudentMeta[];
+
+      // Add more defensive checks
+      if (!metadata || !Array.isArray(metadata) || metadata.length === 0) {
+        return <div className="text-center">N/A</div>;
+      }
+
+      return <div className="text-center">{metadata[0].name || "N/A"}</div>;
+    },
   },
   {
-    accessorKey: "documentHash",
+    accessorKey: "DocHash",
     header: "Document Hash",
     cell: ({ row }) => (
       <div className="text-center font-mono text-sm">
-        {row.getValue("documentHash")}
+        {(row.getValue("DocHash") as string)?.substring(0, 16)}...
       </div>
     ),
   },
   {
-    accessorKey: "signBy",
-    header: "Sign By",
+    accessorKey: "Issuer",
+    header: "Issued By",
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("signBy")}</div>
+      <div className="text-center">{row.getValue("Issuer")}</div>
     ),
   },
   {
-    accessorKey: "issueDate",
+    accessorKey: "IssueDate",
     header: ({ column }) => {
       return (
         <div className="flex justify-center">
@@ -90,26 +95,25 @@ const columns: ColumnDef<DocumentVerification>[] = [
       );
     },
     cell: ({ row }) => {
-      const date = new Date(row.getValue("issueDate"));
+      const date = new Date(row.getValue("IssueDate"));
       return <div className="text-center">{date.toLocaleDateString()}</div>;
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: "Status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-
+      const status = row.getValue("Status") as string;
       return (
         <div className="flex justify-center">
           <Badge
-            variant={status === "verified" ? "default" : "destructive"}
+            variant={status === "approved" ? "default" : "destructive"}
             className={`gap-1 ${
-              status === "verified"
+              status === "approved"
                 ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
             }`}>
-            {status === "verified" ? (
+            {status === "approved" ? (
               <Check className="h-3 w-3" />
             ) : (
               <X className="h-3 w-3" />
@@ -120,14 +124,35 @@ const columns: ColumnDef<DocumentVerification>[] = [
       );
     },
   },
+  {
+    accessorKey: "docType",
+    header: "Document Type",
+    cell: ({ row }) => (
+      <div className="text-center">
+        {(row.getValue("docType") as string)?.charAt(0).toUpperCase() +
+          (row.getValue("docType") as string)?.slice(1)}
+      </div>
+    ),
+  },
 ];
 
 export default function DocumentVerificationTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  const {
+    data: documents = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["getAllDocuments"],
+    queryFn: getAllDocument,
+  });
+
+  console.log(documents);
+
   const table = useReactTable({
-    data,
+    data: documents,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -141,6 +166,9 @@ export default function DocumentVerificationTable() {
     },
   });
 
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading documents</p>;
+
   return (
     <div className="w-full px-4">
       <div className="mb-6">
@@ -149,20 +177,10 @@ export default function DocumentVerificationTable() {
         </h2>
       </div>
 
-      <div className="flex justify-between  items-center py-4 gap-4">
+      <div className="flex justify-between items-center py-4 gap-4">
         <div className="flex justify-start items-center gap-4 w-full">
           <Input
-            placeholder="Search by certificate number or student name..."
-            value={
-              (table
-                .getColumn("certificateNumber")
-                ?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table
-                .getColumn("certificateNumber")
-                ?.setFilterValue(event.target.value)
-            }
+            placeholder="Search by document ID or student name..."
             className="max-w-lg w-full"
           />
           <DocumentDialog />

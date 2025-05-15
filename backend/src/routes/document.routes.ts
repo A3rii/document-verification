@@ -11,6 +11,18 @@ import {
 
 const router = express.Router();
 
+
+
+
+
+
+
+
+
+
+/** Document API */
+
+
 // post and get doc
 router.route("/").get(getAllDocument).post(postingDocument);
 

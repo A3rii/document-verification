@@ -21,7 +21,7 @@ async function main() {
     const identity = await wallet.get("appUser");
 
     if (!identity) {
-      console.log("Identity user  not found in wallet");
+      console.log("Identity user not found in wallet");
       return;
     }
 

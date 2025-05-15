@@ -9,7 +9,6 @@ const ERROR = 500;
 const NOTFOUND = 404;
 const BADREQUEST = 400;
 
-// adding doc to blockchain
 const postingDocument = async (
   req: Request<{}, {}, DocumentPayload>,
   res: Response
@@ -26,8 +25,8 @@ const postingDocument = async (
       metadata,
       docType,
     } = req.body;
-    const { gateway, contract } = await connectToNetwork();
 
+    // Validation
     if (
       !id ||
       !issuer ||
@@ -40,12 +39,15 @@ const postingDocument = async (
       !docType
     ) {
       res.status(BADREQUEST).json({ message: "Missing Field Required" });
+      return;
     }
 
     if (!Array.isArray(metadata)) {
       res.status(400).json({ error: "Metadata must be an array" });
       return;
     }
+
+    const { gateway, contract } = await connectToNetwork();
 
     const result = await contract.submitTransaction(
       "CreateAsset",
@@ -61,10 +63,19 @@ const postingDocument = async (
     );
 
     gateway.disconnect();
-    res.status(201).json({
-      message: "success",
-      result: JSON.parse(result.toString()),
-    });
+
+    // Check if result is empty, if so just send success message
+    if (!result || result.toString().trim() === "") {
+      res.status(201).json({
+        message: "Asset created successfully",
+        id: id,
+      });
+    } else {
+      res.status(201).json({
+        message: "success",
+        result: JSON.parse(result.toString()),
+      });
+    }
   } catch (error: any) {
     res.status(ERROR).json({ message: error.message });
   }
