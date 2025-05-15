@@ -1,58 +1,62 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { Button } from "./../../components/ui/button";
+import { Button } from "./ui/button";
+import RUPP_LOGO from "./../assets/logo/rupp_logo.png";
+import { Link, useNavigate } from "react-router";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Services", href: "/services" },
-    { label: "Contact", href: "/contact" },
+    { label: "Verify", href: "/verify" },
   ];
 
   return (
     <header className="bg-white border-b" style={{ borderColor: "#f0f0f0" }}>
-      <div className="w-container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="w-container mx-auto">
+        <div className="flex items-center justify-between h-24">
           {/* Logo */}
-          <a
-            href="/"
-            className="text-2xl font-bold"
-            style={{ color: "#b8272c" }}>
-            LOGO
-          </a>
+          <Link to="/" className="flex jusify-center items-center gap-4">
+            <img src={RUPP_LOGO} className="size-16 font-bold" />
+            <p className="font-sora font-[800] text-[26px] text-custom-primary">
+              Certificate Verification
+            </p>
+          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-gray-700 hover:text-[#b8272c] transition-colors duration-200">
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <div className="flex justify-center items-center gap-12">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="text-gray-700 hover:text-[#b8272c] transition-colors duration-200 font-sora font-[600]">
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-          {/* Desktop CTA Button */}
-          <Button
-            className="hidden md:block"
-            style={{
-              backgroundColor: "#b8272c",
-              borderColor: "#b8272c",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#9a2024";
-              e.currentTarget.style.borderColor = "#9a2024";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#b8272c";
-              e.currentTarget.style.borderColor = "#b8272c";
-            }}>
-            Get Started
-          </Button>
+            {/* Desktop CTA Button */}
+            <Button
+              onClick={() => navigate("/login")}
+              className="hidden md:block font-sora pointer-cursor"
+              style={{
+                backgroundColor: "#b8272c",
+                borderColor: "#b8272c",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#9a2024";
+                e.currentTarget.style.borderColor = "#9a2024";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#b8272c";
+                e.currentTarget.style.borderColor = "#b8272c";
+              }}>
+              Login
+            </Button>
+          </div>
 
           {/* Mobile Menu Button */}
           <Button
@@ -95,7 +99,7 @@ export default function Header() {
                 e.currentTarget.style.backgroundColor = "#b8272c";
                 e.currentTarget.style.borderColor = "#b8272c";
               }}>
-              Get Started
+              Login
             </Button>
           </div>
         </div>

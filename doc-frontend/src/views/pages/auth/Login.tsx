@@ -1,6 +1,6 @@
-import RUPP from "../../../../assets/login/royal_univeristy_phnom_penh.png";
-import RUPP_LOGO from "./../../../../assets/logo/rupp_logo.png";
-import { LoginForm } from "./../../../../components/admin/LoginForm";
+import RUPP from "./../../../assets/login/royal_univeristy_phnom_penh.png";
+import RUPP_LOGO from "./../../../assets/logo/rupp_logo.png";
+import { LoginForm } from "./../../../components/LoginForm";
 
 export default function Login() {
   return (
@@ -10,7 +10,7 @@ export default function Login() {
           src={RUPP}
           alt="Image"
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover brightness-[1] "
+          className="absolute inset-0 h-full w-full object-cover brightness-[0.8] "
         />
       </div>
       <div className="flex flex-col gap-4 p-6 md:p-10">

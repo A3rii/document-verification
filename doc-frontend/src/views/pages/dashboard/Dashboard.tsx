@@ -5,21 +5,23 @@ import {
   CardTitle,
   CardFooter,
 } from "./../../../components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { FileCheck2 } from "lucide-react";
 
 export default function Dashboard() {
   return (
-    <div className="w-full max-w-full sflex items-center justify-center gap-4">
+    <div className="w-full max-w-full flex items-center justify-center gap-4">
+      {/* 1 */}
       <Card className="w-full shadow-sm">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Total Documents</CardDescription>
           <CardTitle className="text-2xl lg:text-3xl font-semibold tabular-nums">
-            $1,250.00
+            1,250.00 Record(s)
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex flex-col items-start gap-1 text-sm">
           <div className="flex items-center gap-2 font-medium">
-            Trending up this month <TrendingUp className="h-4 w-4" />
+            Documents which are stored in a block
+            <FileCheck2 className="text-custom-primary h-4 w-4" />
           </div>
           <div className="text-muted-foreground">
             Visitors for the last 6 months
