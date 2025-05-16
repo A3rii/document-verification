@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema({
+  owner_id: {
+    type: String,
+    required: [true, "ownwe must be provided"],
+  },
   name: {
     type: String,
     required: [true, "name must be provided"],
