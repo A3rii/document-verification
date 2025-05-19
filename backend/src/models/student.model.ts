@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const studentSchema = new mongoose.Schema({
   owner_id: {
     type: String,
-    required: [true, "ownwe must be provided"],
+    required: [true, "owner must be provided"],
   },
   name: {
     type: String,

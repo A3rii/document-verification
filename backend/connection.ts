@@ -14,14 +14,14 @@ async function main() {
     const ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
 
     // Create a wallet with identity
-    const walletPath = path.join(process.cwd(), "fabric-connection/wallet");
+    const walletPath = path.join(process.cwd(), "wallet");
 
     const wallet = await Wallets.newFileSystemWallet(walletPath);
 
-    const identity = await wallet.get("appUser");
+    const identity = await wallet.get("admin");
 
     if (!identity) {
-      console.log("Identity user not found in wallet");
+      console.log("Identity admin not found in wallet");
       return;
     }
 
@@ -29,11 +29,11 @@ async function main() {
     const gateway = new Gateway();
     await gateway.connect(ccp, {
       wallet,
-      identity: "appUser",
+      identity: "admin",
       discovery: { enabled: true, asLocalhost: true },
     });
 
-    const network = await gateway.getNetwork("document");
+    const network = await gateway.getNetwork("mychannel");
 
     // folder where u  store the smart contract
     const contract = network.getContract("ledger");

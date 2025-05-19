@@ -27,15 +27,13 @@ const verifyToken: RequestHandler = (req, res, next) => {
     // Attach the decoded token to the request
     req.user = decoded;
 
-    // Proceed to the next middleware
     next();
   } catch (error) {
-    // Handle token verification errors
     res.status(401).json({
       success: false,
       message: "Invalid or expired token",
     });
-    return; // Return void, not the Response object
+    return; 
   }
 };
 
