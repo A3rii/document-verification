@@ -13,7 +13,7 @@ import { ShieldCheck } from "lucide-react";
 import { formatFileSize } from "../../utils/formatFileSize";
 
 export default function FileInput() {
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+  const MAX_FILE_SIZE = 2 * 1024 * 1024;
   const [fileName, setFileName] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
     undefined
@@ -90,6 +90,7 @@ export default function FileInput() {
       e.target.value = "";
       setSelectedImage(undefined);
     }
+    console.log(file);
   };
 
   // Clean up object URL when component unmounts or image changes

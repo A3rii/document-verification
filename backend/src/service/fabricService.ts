@@ -1,4 +1,4 @@
-import { caClient } from "./../../utils/caClient";
+import { caClient } from "../utils/caClient";
 
 export interface EnrollmentResult {
   success: boolean;
@@ -130,8 +130,6 @@ export class FabricService {
       };
     }
   }
-
-
 
   async checkUserExists(userId: string): Promise<boolean> {
     const wallet = caClient.getWallet();

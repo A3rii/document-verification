@@ -1,4 +1,3 @@
-
 export const privateKeyFormat = (secretKey: string) => {
   return secretKey
     .replace(/-----BEGIN PRIVATE KEY-----/, "")
@@ -12,6 +11,5 @@ export const publicKeyFormat = (publicKey: string) => {
   return publicKey
     .replace(/-----BEGIN CERTIFICATE-----/, "")
     .replace(/-----END CERTIFICATE-----/, "")
-
     .trim();
 };

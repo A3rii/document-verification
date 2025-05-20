@@ -1,7 +1,7 @@
 "use strict";
 
 import { Request, Response } from "express";
-import { connectToNetwork } from "./../../connection-api";
+import { connectToNetwork } from "../connection-api";
 import { DocumentPayload } from "../types/document-types";
 
 const SUCCESS = 200;

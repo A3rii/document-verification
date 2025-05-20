@@ -12,15 +12,6 @@ const main = () => {
 
   const signature = signDocWithPrivateKey(docHash, privateKeyPem);
 
-  //** Create a complete signature package
-
-  //   const signaturePackage = {
-  //     documentHash: docHash,
-  //     signature: signature,
-  //     timestamp: new Date().toISOString(),
-  //     algorithm: "SHA256withECDSA",
-  //   };
-
   console.log("Document Signature", signature);
 };
 

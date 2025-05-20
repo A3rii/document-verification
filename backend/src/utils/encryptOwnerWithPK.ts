@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { encrypt } from "eciesjs";
-var EC = require("elliptic").ec;
+import { ec as EC } from "elliptic";
 
 const encryptOwnerWithPK = async (
   docHash: string,
@@ -15,7 +15,6 @@ ${certificateBase64}
     // Create a public key from the certificate
     const publicKey = crypto.createPublicKey(formattedCert);
 
-   
     const publicKeyDer = publicKey.export({
       format: "der",
       type: "spki",

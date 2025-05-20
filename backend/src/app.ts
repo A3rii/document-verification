@@ -1,11 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
-import document from "./src/routes/document.routes";
-import enrollment from "./src/routes/register.routes";
-import student from "./src/routes/student.routes";
+import document from "./routes/document.routes";
+import enrollment from "./routes/register.routes";
+import student from "./routes/student.routes";
 import morgan from "morgan";
-import auth from "./src/routes/auth.routes";
-import connectDB from "./src/configs/database";
+import auth from "./routes/auth.routes";
+import connectDB from "./configs/database";
 import cors from "cors";
 import expressListEndpoints from "express-list-endpoints";
 import "dotenv/config";

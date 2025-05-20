@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Request, Response } from "express";
 import FabricCAServices from "fabric-ca-client";
 import { Wallets, X509Identity } from "fabric-network";
-import { publicKeyFormat } from "../../utils/key-format";
+import { publicKeyFormat } from "../utils/key-format";
 import { RegisterUserBody } from "./../types/student-auth-types";
 
 import fs from "fs";
