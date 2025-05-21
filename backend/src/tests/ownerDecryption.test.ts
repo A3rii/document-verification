@@ -13,14 +13,14 @@ const main = async () => {
     const { identity } = result;
     // The encrypted message
     const encryptedMessage =
-      "BFNVwA/xTQvB9c5v340Hbz9UrfK3cyAYW/q0fTqhrR8VZ+MQ/cLclo9FbTr6/harHSQ0kv91D/L1v2cwW1ygJD5P1ec0FuNnD5q0hiLE59nJr5/MgFM3Bplp1SGPR7hGN7C6IO0nBW2Mp0lgYoGkaqkXaO1J43CbiUaeKpbIYI5N";
+      "BInn5mxs1veMYb5dMXqT82aq9h1CLnuHOpZt36OxyTwXlZm2M+lSPD6RtQuCaGvLEUgjUkFF3w9Yabz9RT9EpMHIJ+dCY1krucv1JNHTH5xMuHdj1v9PYRnZB8387D2Dx/ZKrgiGyge3zca+A3FiveKIlZnNBYw+mKQA2Ag2RZFjd5vP9GD0fY8mRvFQYW0='";
     // Decrypt
     const decryptedMessage = decryptOwnerMessage(encryptedMessage, identity);
 
     console.log("Decrypted message:", decryptedMessage);
 
     // Verify (assuming the expected result is this hash)
-    const expectedResult = "8743b52063cd84097a65d1633f5c74f5";
+    const expectedResult = "QmVLZ9gAyeJJesGFYVWJyww9eTZVy9xZjGaKuxu5M1RWLM";
     console.log(
       "Decryption matches expected result:",
       decryptedMessage === expectedResult

@@ -42,7 +42,7 @@ const registerStudent = async (
     // Connect to Fabric CA
     const ccpPath = path.resolve(
       __dirname,
-      "./../../fabric-connection/connection.json"
+      "./../fabric-connection/connection.json"
     );
     const ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
     const caInfo = ccp.certificateAuthorities["ca.org1.example.com"];
@@ -199,7 +199,7 @@ const registerAdmin = async (req: Request, res: Response): Promise<void> => {
     }
     const ccpPath = path.resolve(
       __dirname,
-      "./../../fabric-connection/connection.json"
+      "./../fabric-connection/connection.json"
     );
     const ccp = JSON.parse(fs.readFileSync(ccpPath, "utf8"));
 
@@ -221,7 +221,7 @@ const registerAdmin = async (req: Request, res: Response): Promise<void> => {
     }
 
     const enrollment = await ca.enroll({
-      enrollmentID: name,
+      enrollmentID: "admin",
       enrollmentSecret: "adminpw",
     });
 

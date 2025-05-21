@@ -51,7 +51,7 @@ const uploadFileToIPFS = async ({
     }
 
     console.log(`Processing file: ${fileName} (${fileSize} bytes)`);
-    1;
+
     let uploadData: any;
 
     if (Object.keys(metadata).length > 0) {
@@ -66,8 +66,7 @@ const uploadFileToIPFS = async ({
 
     // Upload to IPFS
     const uri = await storage.upload(uploadData);
-   
-   
+
     //getting only hash from the uri
     const cid = extractCID(uri);
     const url = storage.resolveScheme(uri);

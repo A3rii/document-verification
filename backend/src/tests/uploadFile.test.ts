@@ -23,6 +23,8 @@ async function testFileUpload(filePath: string | Buffer) {
     return null;
   }
 }
+
+//testing hosting  
 const currentDir = process.cwd();
 const rootPath = path.resolve(
   currentDir,

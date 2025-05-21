@@ -24,6 +24,8 @@ async function main() {
       console.log("Identity admin not found in wallet");
       return;
     }
+    console.log(walletPath);
+    console.log(identity);
 
     // Connect gateway to the network
     const gateway = new Gateway();
@@ -37,9 +39,9 @@ async function main() {
 
     // folder where u  store the smart contract
     const contract = network.getContract("ledger");
-    const initLedger = await contract.submitTransaction("InitLedger");
+    // const initLedger = await contract.submitTransaction("InitLedger");
 
-    console.log("Ledger Init Successfully" + initLedger);
+    // console.log("Ledger Init Successfully" + initLedger);
 
     const result = await contract.evaluateTransaction("GetAllAssets");
 

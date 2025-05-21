@@ -9,8 +9,8 @@ const encryptOwnerWithPK = async (
   try {
     // Format the certificate properly with BEGIN/END tags
     const formattedCert = `-----BEGIN CERTIFICATE-----
-${certificateBase64}
------END CERTIFICATE-----`;
+    ${certificateBase64}
+    -----END CERTIFICATE-----`;
 
     // Create a public key from the certificate
     const publicKey = crypto.createPublicKey(formattedCert);
@@ -32,11 +32,11 @@ ${certificateBase64}
     // Get the public key for encryption
     const secp256k1PublicKey = Buffer.from(keyPair.getPublic("array"));
 
-    console.log("Using deterministic secp256k1 key derived from certificate");
-    console.log(
-      "Derived public key (hex):",
-      secp256k1PublicKey.toString("hex")
-    );
+    // console.log("Usin2g deterministic secp256k1 key derived from certificate");
+    // console.log(
+    //   "Derived public key (hex):",
+    //   secp256k1PublicKey.toString("hex")
+    // );
 
     // Use ECIES to encrypt with the secp256k1 public key
     const encrypted = encrypt(secp256k1PublicKey, Buffer.from(docHash));
@@ -53,9 +53,8 @@ ${certificateBase64}
         .digest("hex")
         .slice(0, 16), // Just use a prefix for brevity
     };
-    console.log(encryptedPacket);
     // Return the packet as base64-encoded JSON
-    return Buffer.from(JSON.stringify(encryptedPacket)).toString("base64");
+    return Buffer.from(JSON.stringify(encryptedPacket.data)).toString("base64");
   } catch (error) {
     console.error("Encryption error:", error);
     throw error;
