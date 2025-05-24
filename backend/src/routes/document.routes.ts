@@ -23,8 +23,7 @@ router.route("/:docId").get(getDocumentById);
 router.route("/verify/:docHash").get(documentVerification);
 
 // query by student name
-//TODO: error
-router.route("/student").get(getDocumentByStudentName);
+router.route("/student/:studentName").get(getDocumentByStudentName);
 
 // Get Doc By student id
 router.route("/student/:studentId").get(getDocByStudentId);

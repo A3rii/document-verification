@@ -8,15 +8,19 @@ import {
   encryptOwnerWithPK,
   decryptOwnerMessage,
   uploadFileToIPFS,
+  verifiSignature,
 } from "./../exports/doc-index";
 import multer from "multer";
 import fs from "fs";
-import { getPrivateKeyFromWallet } from "./../utils/extractSecretKeyFromWallet";
+import { getKeyFromWallet } from "../utils/extractKeyFromWallet";
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
+
 const SUCCESS = 200;
 const ERROR = 500;
 const NOTFOUND = 404;
 const BADREQUEST = 400;
+
 // multer for file handling
 const upload = multer({
   dest: "uploads/",
@@ -55,10 +59,9 @@ const postingDocument = async (
       });
 
       const {
-        id, // uuid
         issuer, // school
         issueDate, // date of upload
-        // ownerId, // get the doc hash and encrypt by the owner's public key
+        ownerId, // get the doc hash and encrypt by the owner's public key
         status, // either approved or revoked
         metadata, // additional info of user {name, class , etc.}
         docType, // either certificate or transcript
@@ -66,8 +69,7 @@ const postingDocument = async (
 
       // Validation
       if (
-        !id ||
-        // !ownerId ||
+        !ownerId ||
         !issuer ||
         !issueDate ||
         !status ||
@@ -76,10 +78,18 @@ const postingDocument = async (
       ) {
         // Clean up the uploaded file
         fs.unlinkSync(filePath);
-        return res
-          .status(BADREQUEST)
-          .json({ message: "Missing Field Required" });
+        return res.status(BADREQUEST).json({
+          message: `Missing Field Required ${ownerId} ${issuer}
+            ${issueDate}
+            ${status}
+            ${metadata}
+            ${docType}
+            
+            `,
+        });
       }
+
+      const id = uuidv4();
 
       // Parse metadata if it's a string
       let parsedMetadata;
@@ -99,18 +109,24 @@ const postingDocument = async (
       //* Get the document CID from IPFS
       const doc_cid = file.cid;
       const doc_url = file.url;
-      console.log(doc_url);
+
       //* Encrypt the document CID with owner's public key
-      const owner_hash = await encryptOwnerWithPK(
-        doc_cid,
-        "MIICezCCAiKgAwIBAgIUfhB+98J03HSw+J9updJcSVEn+sgwCgYIKoZIzj0EAwIw\ncDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMQ8wDQYDVQQH\nEwZEdXJoYW0xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh\nLm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwNTIxMTQ0OTAwWhcNMjYwNTIxMTYyNTAw\nWjBAMS4wCwYDVQQLEwRvcmcxMAsGA1UECxMEdXNlcjASBgNVBAsTC2RlcGFydG1l\nbnQxMQ4wDAYDVQQDEwVraW1seTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHUF\n3+f77gbL9uZe63MZ4ASHh4qIWO+grsly5jkkXgblI9ovDiUsCZUQcKJigAu7B9vs\nDukXha6ccfW4mtFpm6ajgckwgcYwDgYDVR0PAQH/BAQDAgeAMAwGA1UdEwEB/wQC\nMAAwHQYDVR0OBBYEFEiNixgU7Rcuy2zso71htrQgJIf+MB8GA1UdIwQYMBaAFOLw\nBbwCRouhQNi3YrSy8snEeocyMGYGCCoDBAUGBwgBBFp7ImF0dHJzIjp7ImhmLkFm\nZmlsaWF0aW9uIjoib3JnMS5kZXBhcnRtZW50MSIsImhmLkVucm9sbG1lbnRJRCI6\nImtpbWx5IiwiaGYuVHlwZSI6InVzZXIifX0wCgYIKoZIzj0EAwIDRwAwRAIgNwhn\nzRo3NT5Nzp3mPVuNTumPu13d2yIB5kZnYyV4we4CIBeZGIcDhMqc6snJvenXfDVR\nn7ZPMQhCn+6dUbig7JJp"
-      );
+      const student_pk = getKeyFromWallet(walletPath, ownerId);
+      if (student_pk === null) {
+        throw new Error("Failed to retrieve identity from student wallet");
+      }
+
+      const { certificatePem } = student_pk;
+
+      const owner_hash = await encryptOwnerWithPK(doc_cid, certificatePem);
 
       //* Sign the document CID with admin's private key
-      const admin_pk = getPrivateKeyFromWallet(walletPath, "admin");
+      const admin_pk = getKeyFromWallet(walletPath, "rupp");
+
       if (admin_pk === null) {
-        throw new Error("Failed to retrieve identity from wallet");
+        throw new Error("Failed to retrieve identity from admin  wallet");
       }
+
       const { privateKeyPem } = admin_pk;
       const doc_signature = signDocWithPrivateKey(doc_cid, privateKeyPem);
 
@@ -125,6 +141,7 @@ const postingDocument = async (
         issueDate,
         owner_hash,
         doc_cid,
+        doc_url,
         doc_signature,
         status,
         JSON.stringify(parsedMetadata),
@@ -139,13 +156,11 @@ const postingDocument = async (
         res.status(201).json({
           message: "Asset created successfully",
           id: id,
-          doc_url: doc_url,
         });
       } else {
         res.status(201).json({
           message: "success",
           result: JSON.parse(result.toString()),
-          doc_url: doc_url,
         });
       }
     });
@@ -193,22 +208,63 @@ const documentVerification = async (
   res: Response
 ): Promise<void> => {
   const { gateway, contract } = await connectToNetwork();
+  const walletPath = path.resolve(__dirname, "../../wallet");
   try {
     const { docHash } = req.params;
-    const result = await contract.evaluateTransaction(
-      "AssetExistsByDocHash",
-      docHash
-    );
+    const result = await contract.evaluateTransaction("VerifyAsset", docHash);
+    const parseResult = JSON.parse(result.toString());
+
     gateway.disconnect();
-    if (!result) {
+
+    if (!parseResult.exists) {
       res.status(NOTFOUND).json({ message: "Document not found" });
     }
 
-    res.status(SUCCESS).json({
-      message: "success",
-      result: JSON.parse(result.toString()),
-    });
+    // getting data from the document
+    const doc_result = parseResult.data;
+
+    // getting private key from owner wallet
+    const ownerWallet = getKeyFromWallet(
+      walletPath,
+      doc_result?.MetaData?.[0].name // owner wallet's name
+    );
+
+    // check type safety
+    if (ownerWallet === null) {
+      throw new Error("Failed to retrieve identity from wallet");
+    }
+
+    //getting identity of the owner
+    const { identity } = ownerWallet;
+
+    const adminWallet = getKeyFromWallet(
+      walletPath,
+      "rupp" // admin wallet's name
+    );
+    if (adminWallet === null) {
+      throw new Error("Failed to retrieve identity from wallet");
+    }
+    const { certificatePem } = adminWallet;
+
+    // if the decryption equal to doch hash which mean the doc is from the actual owner
+    // if the verify the doc is true which mean the doc comes from the rupp
+
+    if (
+      decryptOwnerMessage(doc_result.OwnerId, identity) ===
+        doc_result.DocHash &&
+      verifiSignature(
+        doc_result.DocHash,
+        doc_result.DocSignature,
+        certificatePem
+      )
+    ) {
+      res.status(SUCCESS).json({
+        message: "You are the owner of the document",
+        result: parseResult.data,
+      });
+    }
   } catch (error: any) {
+    gateway.disconnect();
     res.status(ERROR).json({ error: error.message });
   }
 };
@@ -221,10 +277,10 @@ const getDocumentByStudentName = async (
   const { gateway, contract } = await connectToNetwork();
 
   try {
-    const { name } = req.query;
+    const { studentName } = req.params;
 
     // Type guard to ensure studentName is a string
-    if (typeof name !== "string") {
+    if (typeof studentName !== "string") {
       res.status(BADREQUEST).json({
         error: "studentName must be provided as a string",
       });
@@ -234,10 +290,9 @@ const getDocumentByStudentName = async (
     // query by student name
     const result = await contract.evaluateTransaction(
       "QueryAssetsByStudentName",
-      name
+      studentName
     );
 
-    console.log(name);
     gateway.disconnect();
     res.status(SUCCESS).json({
       message: "success",
@@ -270,7 +325,8 @@ const getDocumentByStatus = async (
 
     const result = await contract.evaluateTransaction(
       "QueryAssetsByStatus",
-      status
+      status,
+      "certificate"
     );
 
     gateway.disconnect();

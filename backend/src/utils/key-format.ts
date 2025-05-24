@@ -13,3 +13,10 @@ export const publicKeyFormat = (publicKey: string) => {
     .replace(/-----END CERTIFICATE-----/, "")
     .trim();
 };
+
+export const cleanUpCertificateFormat = (cert: string): string => {
+  return cert
+    .replace(/\s+/g, "") // Remove all whitespace
+    .replace(/\n/g, "") // Remove newlines
+    .replace(/\r/g, ""); // Remove carriage returns
+};

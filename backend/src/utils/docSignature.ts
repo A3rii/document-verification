@@ -36,5 +36,48 @@ const signDocWithPrivateKey = (
   }
 };
 
+const verifiSignature = (
+  docHash: string,
+  signature: string,
+  publicKeyPem: string
+): boolean => {
+  try {
+    // Normalize the public key format
+    const normalizedPublicKey = publicKeyPem
+      .replace(/\r\n/g, "\n")
+      .replace(/\\r\\n/g, "\n");
 
-export { signDocWithPrivateKey }
+    // Load the public key
+    const publicKey = crypto.createPublicKey({
+      key: normalizedPublicKey,
+      format: "pem",
+      type: "spki",
+    });
+
+    // Create the same SHA-256 digest of the document hash
+    const digest = crypto.createHash("sha256").update(docHash).digest();
+
+    // Convert signature from base64 to buffer
+    const signatureBuffer = Buffer.from(signature, "base64");
+
+    // Verify the signature using the same encoding format
+    const isValid = crypto.verify(
+      null,
+      digest,
+      {
+        key: publicKey,
+        dsaEncoding: "ieee-p1363",
+      },
+      signatureBuffer
+    );
+
+    return isValid;
+  } catch (error) {
+    console.error("Verification error:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message);
+    }
+    return false;
+  }
+};
+export { signDocWithPrivateKey, verifiSignature };

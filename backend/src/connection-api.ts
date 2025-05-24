@@ -9,7 +9,7 @@ const connectToNetwork = async () => {
   const walletPath = path.join(process.cwd(), "wallet");
   const wallet = await Wallets.newFileSystemWallet(walletPath);
 
-  const identity = await wallet.get("admin");
+  const identity = await wallet.get("rupp");
   if (!identity) {
     throw new Error("Admin identity not found in wallet");
   }
@@ -17,7 +17,7 @@ const connectToNetwork = async () => {
   const gateway = new Gateway();
   await gateway.connect(ccp, {
     wallet,
-    identity: "admin",
+    identity: "rupp",
     discovery: { enabled: true, asLocalhost: true },
   });
 

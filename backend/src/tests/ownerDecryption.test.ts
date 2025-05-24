@@ -1,19 +1,22 @@
-import { getPrivateKeyFromWallet } from "./../utils/extractSecretKeyFromWallet";
+import { getKeyFromWallet } from "./../utils/extractKeyFromWallet";
 import { decryptOwnerMessage } from "./../utils/decryptOwnerMessage";
+import path from "path";
 // Function Testing
 const main = async () => {
-  const walletPath = "./../wallet";
+  const walletPath = path.resolve(__dirname, "../../wallet");
+
   try {
-    const result = getPrivateKeyFromWallet(walletPath, "neon");
+    const result = getKeyFromWallet(walletPath, "bora");
 
     // Check if result is null
     if (result === null) {
       throw new Error("Failed to retrieve identity from wallet");
     }
     const { identity } = result;
+    console.log(identity);
     // The encrypted message
     const encryptedMessage =
-      "BInn5mxs1veMYb5dMXqT82aq9h1CLnuHOpZt36OxyTwXlZm2M+lSPD6RtQuCaGvLEUgjUkFF3w9Yabz9RT9EpMHIJ+dCY1krucv1JNHTH5xMuHdj1v9PYRnZB8387D2Dx/ZKrgiGyge3zca+A3FiveKIlZnNBYw+mKQA2Ag2RZFjd5vP9GD0fY8mRvFQYW0='";
+      "BMvVwCU8Ir652zIVkbVJLNOL9dFEGdUp7JVELqaANq4v4zwNopbxz6x/05o417BewEAQ3nD1IYnYTeEfF8IoLMEsomNkn5BWEWv27XtjTt+KxoDweUtE2sEj0rLR0lSil7NUMNDWbpVOgMi+0kq5Np0HkjhKCKE/05XjZvMtw/bQZC3TrCpAUFRR/5QlcBU=";
     // Decrypt
     const decryptedMessage = decryptOwnerMessage(encryptedMessage, identity);
 

@@ -77,7 +77,7 @@ const registerStudent = async (
     }
 
     // Check if admin identity is in the wallet
-    const adminIdentity = await wallet.get("admin");
+    const adminIdentity = await wallet.get("rupp");
     if (!adminIdentity) {
       res.status(400).json({
         success: false,
@@ -91,7 +91,7 @@ const registerStudent = async (
     const provider = wallet
       .getProviderRegistry()
       .getProvider(adminIdentity.type);
-    const adminUser = await provider.getUserContext(adminIdentity, "admin");
+    const adminUser = await provider.getUserContext(adminIdentity, "rupp");
 
     // Register user with Fabric CA
     const secret = await ca.register(
@@ -123,7 +123,7 @@ const registerStudent = async (
     const id = uuidv4();
 
     // get clean private key
-    const publicKey = publicKeyFormat(enrollment.certificate);
+    const publicKey = enrollment.certificate;
 
     // Hash the password for MongoDB storage
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -298,7 +298,7 @@ const loginStudent = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
     const student = await Student.findOne({ email });
     if (!student) {
-      res.status(404).json({ message: "student is not foundS" });
+      res.status(404).json({ message: "student is not found" });
       return;
     }
     const isPasswordValid = await bcrypt.compare(password, student.password);
@@ -321,6 +321,7 @@ const loginStudent = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       message: "Login successfully",
       access_token: jwtToken,
+      user: student,
     });
   } catch (error: any) {
     res.status(500).json({

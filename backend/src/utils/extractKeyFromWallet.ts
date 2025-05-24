@@ -14,9 +14,10 @@ interface FabricIdentity {
 interface IdentityResult {
   identity: FabricIdentity;
   privateKeyPem: string;
+  certificatePem: string;
 }
 
-const getPrivateKeyFromWallet = (
+const getKeyFromWallet = (
   walletPath: string,
   name: string
 ): IdentityResult | null => {
@@ -46,11 +47,13 @@ const getPrivateKeyFromWallet = (
     if (
       identity.type === "X.509" &&
       identity.credentials &&
-      identity.credentials.privateKey
+      identity.credentials.privateKey &&
+      identity.credentials.certificate
     ) {
       return {
         identity: identity,
         privateKeyPem: identity.credentials.privateKey,
+        certificatePem: identity.credentials.certificate,
       };
     } else {
       console.error(`Private key not found for user ${name}`);
@@ -62,4 +65,4 @@ const getPrivateKeyFromWallet = (
   }
 };
 
-export { getPrivateKeyFromWallet };
+export { getKeyFromWallet };
