@@ -167,8 +167,7 @@ export default function Student() {
         <p className="text-gray-600">
           View and manage student information and academic records
         </p>
-      </div>
-
+      </div>{" "}
       <div className="flex items-center py-4 gap-4">
         <Input
           placeholder="Search by student ID or name..."
@@ -182,7 +181,6 @@ export default function Student() {
         />
         <StudentDialog />
       </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -231,7 +229,6 @@ export default function Student() {
           </TableBody>
         </Table>
       </div>
-
       <div className="flex items-center justify-between py-4">
         <div className="text-sm text-muted-foreground">
           Showing {table.getRowModel().rows.length} of{" "}

@@ -1,7 +1,12 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router";
 import Layout from "./views/layout/admin/layout";
 import UserLayout from "./views/layout/users/layout";
-import { Dashboard, Document, Student } from "./views/pages/dashboard/index";
+import {
+  Dashboard,
+  Document,
+  Student,
+  DocumentForm,
+} from "./views/pages/dashboard/index";
 import Login from "./views/pages/auth/Login";
 import { Home, Verify } from "./views/pages/users/index";
 export default function App() {
@@ -17,6 +22,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="documents" element={<Document />} />
+              <Route path="document-form" element={<DocumentForm />} />
             <Route path="students" element={<Student />} />
           </Route>
 

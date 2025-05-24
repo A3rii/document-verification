@@ -50,7 +50,7 @@ const columns: ColumnDef<DocumentItems>[] = [
   },
   {
     accessorKey: "MetaData",
-    header: "Student Name", 
+    header: "Student Name",
     cell: ({ row }) => {
       const metadata = row.getValue("MetaData") as StudentMeta[];
 
@@ -59,7 +59,9 @@ const columns: ColumnDef<DocumentItems>[] = [
         return <div className="text-center">N/A</div>;
       }
 
-      return <div className="text-center">{metadata[0].name || "N/A"}</div>;
+      return (
+        <div className="text-center uppercase">{metadata[0].name || "N/A"}</div>
+      );
     },
   },
   {
@@ -95,8 +97,7 @@ const columns: ColumnDef<DocumentItems>[] = [
       );
     },
     cell: ({ row }) => {
-      const date = new Date(row.getValue("IssueDate"));
-      return <div className="text-center">{date.toLocaleDateString()}</div>;
+      return <div className="text-center">{row.getValue("IssueDate")}</div>;
     },
   },
   {
@@ -177,7 +178,7 @@ export default function DocumentVerificationTable() {
         </h2>
       </div>
 
-      <div className="flex justify-between items-center py-4 gap-4">
+      {/* <div className="flex justify-between items-center py-4 gap-4">
         <div className="flex justify-start items-center gap-4 w-full">
           <Input
             placeholder="Search by document ID or student name..."
@@ -189,7 +190,7 @@ export default function DocumentVerificationTable() {
           <Sheet className="mr-2 h-4 w-4" />
           Import
         </Button>
-      </div>
+      </div> */}
 
       <div className="rounded-md border">
         <Table>

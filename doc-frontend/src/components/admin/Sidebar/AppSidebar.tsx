@@ -18,27 +18,48 @@ import {
   SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
-} from "./../ui/sidebar";
-import { cn } from "./../../lib/utils";
+} from "../../ui/sidebar";
+import { cn } from "../../../lib/utils";
 import { Link } from "react-router";
-import RUPP from "./../../assets/logo/rupp_logo.png";
-const items = [
+import RUPP from "./../../../assets/logo/rupp_logo.png";
+import CollapseMenu from "./CollapseMenu";
+
+// Regular menu items (non-collapsible)
+
+// Collapsible menu items
+const collapsibleItems = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: Home,
+    isActive: false,
+    isCollapsable: false,
+    items: [],
   },
   {
     title: "Documents",
     url: "/admin/documents",
     icon: FileText,
-    badge: "12",
+    isCollapsable: true,
+    isActive: true,
+    items: [
+      {
+        title: "All Documents",
+        url: "/admin/documents",
+      },
+      {
+        title: "Form",
+        url: "/admin/document-form",
+      },
+    ],
   },
-
   {
     title: "Students",
     url: "/admin/students",
     icon: Users,
+    isActive: false,
+    isCollapsable: false,
+    items: [],
   },
 ];
 
@@ -86,16 +107,7 @@ export default function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon className="text-custom-primary" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <CollapseMenu items={collapsibleItems} />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -1,6 +1,6 @@
 import RUPP from "./../../../assets/login/royal_univeristy_phnom_penh.png";
 import RUPP_LOGO from "./../../../assets/logo/rupp_logo.png";
-import { LoginForm } from "./../../../components/LoginForm";
+import LoginForm from "./../../../components/LoginForm";
 
 export default function Login() {
   return (
