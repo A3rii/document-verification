@@ -2,9 +2,12 @@ import { Separator } from "./../../../components/ui/separator";
 import { useNavigate } from "react-router";
 import { Button } from "./../../../components/ui/button";
 import Illustrate from "./../../../assets/illustration/illustrate.png";
-
+import useCurrentUser from "../../../hooks/use-current-user";
 export default function Home() {
+  const user = useCurrentUser();
   const navigate = useNavigate();
+
+  console.log(user);
   return (
     <div className="w-container mx-auto min-h-[50vh] flex items-center px-4">
       <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 md:gap-12">

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -10,10 +12,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Check, X, Sheet } from "lucide-react";
+import { ArrowUpDown, Check, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./../../../components/ui/button";
-import { Input } from "./../../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,7 +26,6 @@ import {
 import { Badge } from "./../../../components/ui/badge";
 import { DocumentItems, StudentMeta } from "./../../../types/admin-table-type";
 import { getAllDocument } from "../../../services/document-service/get-all-doc";
-import DocumentDialog from "../../../components/admin/DocumentDialog";
 
 const columns: ColumnDef<DocumentItems>[] = [
   {
@@ -64,15 +64,7 @@ const columns: ColumnDef<DocumentItems>[] = [
       );
     },
   },
-  {
-    accessorKey: "DocHash",
-    header: "Document Hash",
-    cell: ({ row }) => (
-      <div className="text-center font-mono text-sm">
-        {(row.getValue("DocHash") as string)?.substring(0, 16)}...
-      </div>
-    ),
-  },
+
   {
     accessorKey: "Issuer",
     header: "Issued By",
@@ -135,6 +127,17 @@ const columns: ColumnDef<DocumentItems>[] = [
       </div>
     ),
   },
+  {
+    accessorKey: "Doc_URL",
+    header: "URL",
+    cell: ({ row }) => (
+      <Link
+        to={row.getValue("Doc_URL")}
+        className="text-center flex justify-center items-center text-blue-400">
+        inspect
+      </Link>
+    ),
+  },
 ];
 
 export default function DocumentVerificationTable() {
@@ -148,9 +151,10 @@ export default function DocumentVerificationTable() {
   } = useQuery({
     queryKey: ["getAllDocuments"],
     queryFn: getAllDocument,
+    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000,
   });
 
-  console.log(documents);
 
   const table = useReactTable({
     data: documents,
@@ -177,20 +181,6 @@ export default function DocumentVerificationTable() {
           Document Verification Records
         </h2>
       </div>
-
-      {/* <div className="flex justify-between items-center py-4 gap-4">
-        <div className="flex justify-start items-center gap-4 w-full">
-          <Input
-            placeholder="Search by document ID or student name..."
-            className="max-w-lg w-full"
-          />
-          <DocumentDialog />
-        </div>
-        <Button className="bg-custom-primary hover:bg-rose-400 transition-colors duration-200 cursor-pointer">
-          <Sheet className="mr-2 h-4 w-4" />
-          Import
-        </Button>
-      </div> */}
 
       <div className="rounded-md border">
         <Table>

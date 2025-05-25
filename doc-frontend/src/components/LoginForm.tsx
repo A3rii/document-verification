@@ -26,7 +26,7 @@ export default function LoginForm({
 
   // handle login form
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Fixed typo: preventDfault -> preventDefault
+    e.preventDefault();
 
     try {
       const action = await dispatch(

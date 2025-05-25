@@ -2,15 +2,18 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 import RUPP_LOGO from "./../assets/logo/rupp_logo.png";
+import { Avatar, AvatarFallback, AvatarImage } from "./../components/ui/avatar";
 import { Link, useNavigate } from "react-router";
-
+import useCurrentUser from "../hooks/use-current-user";
 export default function Header() {
+  const user = useCurrentUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Verify", href: "/verify" },
+    { label: "Document", href: "/student-document" },
   ];
 
   return (
@@ -39,26 +42,39 @@ export default function Header() {
             </nav>
 
             {/* Desktop CTA Button */}
-            <Button
-              onClick={() => navigate("/login")}
-              className="hidden md:block font-sora pointer-cursor"
-              style={{
-                backgroundColor: "#b8272c",
-                borderColor: "#b8272c",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#9a2024";
-                e.currentTarget.style.borderColor = "#9a2024";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#b8272c";
-                e.currentTarget.style.borderColor = "#b8272c";
-              }}>
-              Login
-            </Button>
+            {user ? (
+              <>
+                <Avatar>
+                  <AvatarImage
+                    src="https://github.com/shadcn.png"
+                    alt="@shadcn"
+                  />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+              </>
+            ) : (
+              <Button
+                onClick={() => navigate("/login")}
+                className="hidden md:block font-sora pointer-cursor"
+                style={{
+                  backgroundColor: "#b8272c",
+                  borderColor: "#b8272c",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#9a2024";
+                  e.currentTarget.style.borderColor = "#9a2024";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#b8272c";
+                  e.currentTarget.style.borderColor = "#b8272c";
+                }}>
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
+
           <Button
             variant="ghost"
             size="icon"
@@ -85,22 +101,25 @@ export default function Header() {
                 {item.label}
               </a>
             ))}
-            <Button
-              className="w-full mt-4"
-              style={{
-                backgroundColor: "#b8272c",
-                borderColor: "#b8272c",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#9a2024";
-                e.currentTarget.style.borderColor = "#9a2024";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#b8272c";
-                e.currentTarget.style.borderColor = "#b8272c";
-              }}>
-              Login
-            </Button>
+
+            {!user && (
+              <Button
+                className="w-full mt-4"
+                style={{
+                  backgroundColor: "#b8272c",
+                  borderColor: "#b8272c",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#9a2024";
+                  e.currentTarget.style.borderColor = "#9a2024";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#b8272c";
+                  e.currentTarget.style.borderColor = "#b8272c";
+                }}>
+                Login
+              </Button>
+            )}
           </div>
         </div>
       )}

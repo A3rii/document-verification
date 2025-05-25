@@ -1,5 +1,5 @@
 export interface UserState {
-  id: string;
+  _id: string;
   owner_id: string;
   name: string;
   role: string;
@@ -19,7 +19,17 @@ export interface RegisterResponse {
   user: UserState;
 }
 
+// Login Student Type
 export interface studentLogin {
   email: string;
   password: string;
+}
+
+// Register Student Types
+export interface StudentRegisterProps {
+  name: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  phone_number: string;
 }

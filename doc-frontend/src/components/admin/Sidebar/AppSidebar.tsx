@@ -44,11 +44,11 @@ const collapsibleItems = [
     isActive: true,
     items: [
       {
-        title: "All Documents",
+        title: "Documents Record",
         url: "/admin/documents",
       },
       {
-        title: "Form",
+        title: "Document Form",
         url: "/admin/document-form",
       },
     ],
@@ -57,9 +57,18 @@ const collapsibleItems = [
     title: "Students",
     url: "/admin/students",
     icon: Users,
-    isActive: false,
-    isCollapsable: false,
-    items: [],
+    isActive: true,
+    isCollapsable: true,
+    items: [
+      {
+        title: "Students List",
+        url: "/admin/students",
+      },
+      {
+        title: "Students Form",
+        url: "/admin/students-form",
+      },
+    ],
   },
 ];
 

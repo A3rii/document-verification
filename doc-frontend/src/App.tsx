@@ -6,9 +6,11 @@ import {
   Document,
   Student,
   DocumentForm,
+  StudentForm,
 } from "./views/pages/dashboard/index";
 import Login from "./views/pages/auth/Login";
-import { Home, Verify } from "./views/pages/users/index";
+
+import { Home, Verify, StudentDocument } from "./views/pages/users/index";
 export default function App() {
   return (
     <>
@@ -22,8 +24,9 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="documents" element={<Document />} />
-              <Route path="document-form" element={<DocumentForm />} />
+            <Route path="document-form" element={<DocumentForm />} />
             <Route path="students" element={<Student />} />
+            <Route path="students-form" element={<StudentForm />} />
           </Route>
 
           {/* user access route  */}
@@ -31,6 +34,7 @@ export default function App() {
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/student-document" element={<StudentDocument />} />
           </Route>
         </Routes>
       </Router>

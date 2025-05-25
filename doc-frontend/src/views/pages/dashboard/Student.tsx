@@ -13,7 +13,6 @@ import {
 import { ArrowUpDown, Phone, Mail } from "lucide-react";
 import { StudentRecord } from "../../../types/student-table-type";
 import { Button } from "./../../../components/ui/button";
-import { Input } from "./../../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,12 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "./../../../components/ui/table";
-import { Badge } from "./../../../components/ui/badge";
-import { data } from "./../../../data/student-mock";
-import StudentDialog from "../../../components/admin/StudentDialog";
+import { useQuery } from "@tanstack/react-query";
+import { getAllStudents } from "./../../../services/student-service/get-all-student";
+
 const columns: ColumnDef<StudentRecord>[] = [
   {
-    accessorKey: "studentId",
+    accessorKey: "_id",
     header: ({ column }) => {
       return (
         <div className="flex justify-center">
@@ -43,11 +42,11 @@ const columns: ColumnDef<StudentRecord>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="font-medium text-center">{row.getValue("studentId")}</div>
+      <div className="font-medium text-center">{row.getValue("_id")}</div>
     ),
   },
   {
-    id: "fullName",
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <div className="flex justify-center">
@@ -63,15 +62,8 @@ const columns: ColumnDef<StudentRecord>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="text-center">
-        {row.original.firstName} {row.original.lastName}
-      </div>
+      <div className="text-center uppercase">{row.getValue("name")}</div>
     ),
-    sortingFn: (rowA, rowB) => {
-      const nameA = `${rowA.original.firstName} ${rowA.original.lastName}`;
-      const nameB = `${rowB.original.firstName} ${rowB.original.lastName}`;
-      return nameA.localeCompare(nameB);
-    },
   },
   {
     accessorKey: "email",
@@ -88,12 +80,13 @@ const columns: ColumnDef<StudentRecord>[] = [
     ),
   },
   {
-    accessorKey: "phoneNumber",
+    accessorKey: "phone_number",
     header: "Phone",
     cell: ({ row }) => (
       <div className="flex items-center justify-center gap-1">
         <Phone className="h-3 w-3 text-gray-500" />
-        <span className="text-center">{row.getValue("phoneNumber")}</span>
+        <span className="text-center">{row.getValue("phone_number")}</span>{" "}
+        {/* Fixed: use phoneNumber instead of phone_number */}
       </div>
     ),
   },
@@ -104,37 +97,6 @@ const columns: ColumnDef<StudentRecord>[] = [
       <div className="text-center">{row.getValue("program")}</div>
     ),
   },
-
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-
-      const getStatusStyle = (status: string) => {
-        switch (status) {
-          case "active":
-            return "bg-green-100 text-green-800";
-          case "graduated":
-            return "bg-blue-100 text-blue-800";
-          case "suspended":
-            return "bg-yellow-100 text-yellow-800";
-          case "withdrawn":
-            return "bg-red-100 text-red-800";
-          default:
-            return "bg-gray-100 text-gray-800";
-        }
-      };
-
-      return (
-        <div className="flex justify-center">
-          <Badge variant="default" className={`${getStatusStyle(status)}`}>
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge>
-        </div>
-      );
-    },
-  },
 ];
 
 export default function Student() {
@@ -143,8 +105,19 @@ export default function Student() {
     []
   );
 
+  const {
+    data: students = [], // Fixed: renamed from student to students for clarity
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["getAllStudents"],
+    queryFn: getAllStudents,
+    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const table = useReactTable({
-    data,
+    data: students,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -158,6 +131,9 @@ export default function Student() {
     },
   });
 
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading students</p>; // Fixed: changed from "documents" to "students"
+
   return (
     <div className="w-full px-4">
       <div className="mb-6">
@@ -167,19 +143,6 @@ export default function Student() {
         <p className="text-gray-600">
           View and manage student information and academic records
         </p>
-      </div>{" "}
-      <div className="flex items-center py-4 gap-4">
-        <Input
-          placeholder="Search by student ID or name..."
-          value={
-            (table.getColumn("studentId")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("studentId")?.setFilterValue(event.target.value)
-          }
-          className="max-w-md"
-        />
-        <StudentDialog />
       </div>
       <div className="rounded-md border">
         <Table>

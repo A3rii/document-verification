@@ -6,6 +6,8 @@ import {
   UserState,
   studentLogin,
 } from "../../types/auth-type";
+import Cookies from "js-cookie";
+import authToken from "../../utils/authToken";
 
 const initialState: AuthState = {
   currentUser: null,
@@ -14,31 +16,6 @@ const initialState: AuthState = {
   error: null,
   success: false,
 };
-
-export const registerStudent = createAsyncThunk<RegisterResponse>(
-  "auth/registerStudent",
-  async (userData, thunkAPI) => {
-    try {
-      const response = await axios.post<RegisterResponse>(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
-        userData
-      );
-      const { access_token, user } = response.data;
-
-      return { access_token, user };
-    } catch (err) {
-      const error = err as Error;
-
-      if (axios.isAxiosError(error)) {
-        return thunkAPI.rejectWithValue(
-          error.response?.data?.errors || error.message
-        );
-      }
-
-      return thunkAPI.rejectWithValue(error.message || "Registration failed");
-    }
-  }
-);
 
 export const loginStudent = createAsyncThunk<RegisterResponse, studentLogin>(
   "auth/loginStudent",
@@ -49,7 +26,7 @@ export const loginStudent = createAsyncThunk<RegisterResponse, studentLogin>(
         userData
       );
       const { access_token, user } = response.data;
-
+      Cookies.set("token", access_token, { expires: 7, secure: true });
       return { access_token, user };
     } catch (err) {
       const error = err as Error;
@@ -68,7 +45,8 @@ export const loginStudent = createAsyncThunk<RegisterResponse, studentLogin>(
 // Get Current User profile
 export const studentProfile = createAsyncThunk<UserState>(
   "auth/studentProfile",
-  async (token: string, thunkAPI) => {
+  async (_, thunkAPI) => {
+    const token = authToken();
     try {
       const response = await axios.get<RegisterResponse>(
         `${import.meta.env.VITE_API_URL}/auth/profile`,
@@ -99,25 +77,15 @@ export const studentProfile = createAsyncThunk<UserState>(
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
-  extraReducers: (builder) => {
-    //register user
-    builder
-      .addCase(registerStudent.pending, (state) => {
-        state.loading = true;
-        state.error = null; // Clear any previous errors
-      })
-      .addCase(registerStudent.fulfilled, (state, action) => {
-        state.loading = false;
-        state.userToken = action.payload.access_token;
-        state.currentUser = action.payload.user || null;
-      })
-      .addCase(registerStudent.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-        state.success = false;
-      });
+  reducers: {
+    logout: (state) => {
+      state.loading = false;
+      state.currentUser = null;
 
+      Cookies.remove("token");
+    },
+  },
+  extraReducers: (builder) => {
     builder
       .addCase(loginStudent.pending, (state) => {
         state.loading = true;
@@ -129,6 +97,21 @@ const authSlice = createSlice({
         state.currentUser = action.payload.user || null;
       })
       .addCase(loginStudent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.success = false;
+      });
+
+    builder
+      .addCase(studentProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(studentProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+      })
+      .addCase(studentProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;

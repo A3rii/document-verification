@@ -369,7 +369,7 @@ export default function CreateDocumentPage() {
                             Click to upload file
                           </span>
                           <span className="text-sm text-slate-500 mt-1 block">
-                            (PDF, JPG, PNG, GIF - Max 2MB)
+                            (PDF, JPG, PNG - Max 2MB)
                           </span>
                         </div>
                       </Label>
