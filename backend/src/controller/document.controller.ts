@@ -110,17 +110,17 @@ const postingDocument = async (
       const doc_cid = file.cid;
       const doc_url = file.url;
 
-      //* Encrypt the document CID with owner's public key
+      //* Sign document CID with owner's secret key
       const student_pk = getKeyFromWallet(walletPath, ownerId);
       if (student_pk === null) {
         throw new Error("Failed to retrieve identity from student wallet");
       }
 
-      const { certificatePem } = student_pk;
+      const studentPrivateKey = student_pk.privateKeyPem;
 
-      const owner_hash = await encryptOwnerWithPK(doc_cid, certificatePem);
+      const owner_hash = signDocWithPrivateKey(doc_cid, studentPrivateKey);
 
-      //* Sign the document CID with admin's private key
+      //* Sign the document CID with admin's secret key
       const admin_pk = getKeyFromWallet(walletPath, "rupp");
 
       if (admin_pk === null) {
@@ -214,8 +214,6 @@ const documentVerification = async (
     const result = await contract.evaluateTransaction("VerifyAsset", docHash);
     const parseResult = JSON.parse(result.toString());
 
-    gateway.disconnect();
-
     if (!parseResult.exists) {
       res.status(NOTFOUND).json({ message: "Document not found" });
     }
@@ -235,7 +233,7 @@ const documentVerification = async (
     }
 
     //getting identity of the owner
-    const { identity } = ownerWallet;
+    const ownerCertificate = ownerWallet.certificatePem;
 
     const adminWallet = getKeyFromWallet(
       walletPath,
@@ -246,12 +244,15 @@ const documentVerification = async (
     }
     const { certificatePem } = adminWallet;
 
-    // if the decryption equal to doch hash which mean the doc is from the actual owner
     // if the verify the doc is true which mean the doc comes from the rupp
 
+    gateway.disconnect();
     if (
-      decryptOwnerMessage(doc_result.OwnerId, identity) ===
-        doc_result.DocHash &&
+      verifiSignature(
+        doc_result.DocHash,
+        doc_result.OwnerId,
+        ownerCertificate
+      ) &&
       verifiSignature(
         doc_result.DocHash,
         doc_result.DocSignature,
@@ -259,8 +260,12 @@ const documentVerification = async (
       )
     ) {
       res.status(SUCCESS).json({
-        message: "You are the owner of the document",
+        message: "Document is valid",
         result: parseResult.data,
+      });
+    } else {
+      res.status(200).json({
+        message: "Document is counterfeit",
       });
     }
   } catch (error: any) {
@@ -345,12 +350,13 @@ const getDocumentByStatus = async (
 const getDocByStudentId = async (req: Request, res: Response) => {
   try {
     const { gateway, contract } = await connectToNetwork();
-    const { studentId } = req.params;
+    const { ownerId } = req.params;
 
     const result = await contract.evaluateTransaction(
       "QueryAssetsByOwner",
-      studentId
+      ownerId
     );
+
     gateway.disconnect();
     res.status(SUCCESS).json({
       message: "success",
