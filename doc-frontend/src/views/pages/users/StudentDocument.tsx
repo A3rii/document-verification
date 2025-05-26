@@ -1,8 +1,19 @@
-import { Card, CardContent, CardHeader } from "./../../../components/ui/card";
-import { getDocByOwnerId } from "./../../../services/document-service/get-all-doc";
+import { Card, CardContent } from "./../../../components/ui/card";
+import { getDocByOwnerName } from "./../../../services/document-service/get-all-doc";
 import { useQuery } from "@tanstack/react-query";
 import useCurrentUser from "../../../hooks/use-current-user";
 import { DocumentItems } from "./../../../types/doc-types";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./../../../components/ui/popover";
+import { Button } from "./../../../components/ui/button";
+import { downloadQRCode } from "./../../../utils/qrDownload";
+import QRCode from "react-qr-code";
+import { QrCode, Download } from "lucide-react";
+import LOGO from "./../../../assets/logo/rupp_logo.png";
+
 export default function StudentDocument() {
   const user = useCurrentUser();
 
@@ -11,15 +22,16 @@ export default function StudentDocument() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["getDocByOwnerName"],
-    queryFn: () => getDocByOwnerId(user?.name as string),
+    queryKey: ["getDocByOwnerName", user?.name],
+    queryFn: () => getDocByOwnerName(user?.name as string),
+    enabled: !!user?.name,
     refetchOnWindowFocus: true,
     staleTime: 5 * 60 * 1000,
   });
-  console.log(documentsById);
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading documents</p>;
+
   return (
     <div className="w-container mx-auto my-18">
       {documentsById.length > 0 ? (
@@ -43,7 +55,59 @@ export default function StudentDocument() {
                   <span className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
                     {data?.docType}
                   </span>
-                  <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  <div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <QrCode className="text-custom-primary text-[30px] cursor-pointer hover:opacity-80 transition-opacity" />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full">
+                        <div className="space-y-4 flex flex-col justify-center items-center">
+                          <div className="text-center">
+                            <p className="text-sm font-medium text-gray-700 mb-2">
+                              Document QR Code
+                            </p>
+                            <div className="p-2 border-[2px] border-custom-primary border-dotted rounded-md relative">
+                              <img
+                                src={LOGO}
+                                alt="bakong_logo"
+                                loading="lazy"
+                                width={40}
+                                height={40}
+                                style={{
+                                  position: "absolute",
+                                  left: "50%",
+                                  top: "50%",
+                                  transform: "translate(-50% , -50%)",
+                                }}
+                              />
+                              <QRCode
+                                id={`qr-${data?.DocHash}`}
+                                size={200}
+                                style={{
+                                  height: "auto",
+                                  maxWidth: "100%",
+                                  width: "100%",
+                                }}
+                                value={data?.DocHash}
+                                bgColor="#FFFFFF"
+                                fgColor="#000000"
+                                level="H"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() =>
+                              downloadQRCode(data?.DocHash, data?.docType)
+                            }
+                            className="w-full flex items-center justify-center gap-2"
+                            variant="outline">
+                            <Download className="w-4 h-4 text-custom-primary cursor-pointer" />
+                            Download QR Code
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
 
                 {/* Metadata Information */}

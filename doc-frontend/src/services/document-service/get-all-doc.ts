@@ -16,7 +16,7 @@ const getAllDocument = async () => {
   }
 };
 
-const getDocByOwnerId = async (name: string) => {
+const getDocByOwnerName = async (name: string) => {
   try {
     const { data } = await axios.get(
       `${import.meta.env.VITE_API_URL}/document/student/${name}`
@@ -32,4 +32,4 @@ const getDocByOwnerId = async (name: string) => {
   }
 };
 
-export { getAllDocument, getDocByOwnerId };
+export { getAllDocument, getDocByOwnerName };

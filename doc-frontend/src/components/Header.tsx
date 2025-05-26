@@ -45,11 +45,8 @@ export default function Header() {
             {user ? (
               <>
                 <Avatar>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                  <AvatarFallback>CN</AvatarFallback>
+                  <AvatarImage alt="@shadcn" />
+                  <AvatarFallback>{user?.name[0]}</AvatarFallback>
                 </Avatar>
               </>
             ) : (
