@@ -215,7 +215,11 @@ const documentVerification = async (
     const parseResult = JSON.parse(result.toString());
 
     if (!parseResult.exists) {
-      res.status(NOTFOUND).json({ message: "Document not found" });
+      res.status(200).json({
+        status: false,
+        message: "Document not found",
+      });
+      return;
     }
 
     // getting data from the document
@@ -260,6 +264,7 @@ const documentVerification = async (
       )
     ) {
       res.status(SUCCESS).json({
+        status: true,
         message: "Document is valid",
         result: parseResult.data,
       });
@@ -270,7 +275,10 @@ const documentVerification = async (
     }
   } catch (error: any) {
     gateway.disconnect();
-    res.status(ERROR).json({ error: error.message });
+    res.status(ERROR).json({
+      message: false,
+      error: error.message,
+    });
   }
 };
 
