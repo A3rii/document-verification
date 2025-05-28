@@ -11,8 +11,10 @@ import {
 import { Button } from "./../../../components/ui/button";
 import { downloadQRCode } from "./../../../utils/qrDownload";
 import QRCode from "react-qr-code";
-import { QrCode, Download } from "lucide-react";
+import { QrCode, Download, X, Check } from "lucide-react";
 import LOGO from "./../../../assets/logo/rupp_logo.png";
+import Loading from "./../../../components/Loading";
+import { Badge } from "../../../components/ui/badge";
 
 export default function StudentDocument() {
   const user = useCurrentUser();
@@ -29,11 +31,11 @@ export default function StudentDocument() {
     staleTime: 5 * 60 * 1000,
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error loading documents</p>;
+  if (isLoading) return <Loading />;
+  if (isError) return <p>{isError}</p>;
 
   return (
-    <div className="w-container mx-auto my-18">
+    <div className="my-18 flex justify-start items-center gap-12">
       {documentsById.length > 0 ? (
         documentsById.map((data: DocumentItems, key: number) => (
           <Card
@@ -52,9 +54,30 @@ export default function StudentDocument() {
               <div className="space-y-4">
                 {/* Document Type Header */}
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                  <span className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                    {data?.docType}
-                  </span>
+                  <div className="flex justify-center items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
+                      {data?.docType}
+                    </p>
+                    <div className="">
+                      <Badge
+                        variant={
+                          data.Status === "approved" ? "default" : "destructive"
+                        }
+                        className={`gap-1 ${
+                          data.Status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                        {data.Status === "approved" ? (
+                          <Check className="h-3 w-3" />
+                        ) : (
+                          <X className="h-3 w-3" />
+                        )}
+                        {data.Status.charAt(0).toUpperCase() +
+                          data.Status.slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
                   <div>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -99,7 +122,7 @@ export default function StudentDocument() {
                             onClick={() =>
                               downloadQRCode(data?.DocHash, data?.docType)
                             }
-                            className="w-full flex items-center justify-center gap-2"
+                            className="w-full flex items-center justify-center gap-2 cursor-pointer"
                             variant="outline">
                             <Download className="w-4 h-4 text-custom-primary cursor-pointer" />
                             Download QR Code

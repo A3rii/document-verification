@@ -41,7 +41,7 @@ export default function LoginForm({
         if (userRole === "admin") {
           navigate("/admin");
         } else if (userRole === "user") {
-          navigate("/");
+          navigate("/user");
         }
         setEmail("");
         setPassword("");

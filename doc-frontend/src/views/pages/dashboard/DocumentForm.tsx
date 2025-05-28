@@ -8,6 +8,9 @@ import {
   User,
   Camera,
   CalendarIcon,
+  BookOpen,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { Input } from "./../../../components/ui/input";
 import { Label } from "./../../../components/ui/label";
@@ -18,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./../../../components/ui/select";
-import { MetaData } from "../../../types/doc-types";
+import { MetaData, GeneralSubjectProps } from "../../../types/doc-types";
 import { addingDocument } from "./../../../services/document-service/adding-doc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -28,7 +31,10 @@ export default function CreateDocumentPage() {
   const queryClient = useQueryClient();
   const currentDate = dayjs().format("DD-MM-YYYY");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
+  // State for general subjects
+  const [generalSubjects, setGeneralSubjects] = useState<GeneralSubjectProps[]>(
+    [{ name: "", credits: "", grade: "" }]
+  );
   const [formMetaData, setFormMetaData] = useState<MetaData>({
     name: "",
     dob: "",
@@ -38,6 +44,22 @@ export default function CreateDocumentPage() {
     overall: "",
     docType: "",
   });
+
+  // Add new subject
+  const addSubject = () => {
+    setGeneralSubjects([
+      ...generalSubjects,
+      { name: "", credits: "", grade: "" },
+    ]);
+  };
+
+  // Remove subject
+  const removeSubject = (index: number) => {
+    if (generalSubjects.length > 1) {
+      const updatedSubjects = generalSubjects.filter((_, i) => i !== index);
+      setGeneralSubjects(updatedSubjects);
+    }
+  };
 
   // file handling
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,6 +84,19 @@ export default function CreateDocumentPage() {
 
       setSelectedFile(file);
     }
+  };
+  const handleSubjectChange = (
+    index: number,
+    field: keyof GeneralSubjectProps,
+    value: string
+  ) => {
+    const updatedSubjects = [...generalSubjects];
+    updatedSubjects[index] = {
+      ...updatedSubjects[index],
+      [field]:
+        field === "credits" ? (value === "" ? "" : Number(value)) : value,
+    };
+    setGeneralSubjects(updatedSubjects);
   };
 
   // Input onChange
@@ -92,6 +127,7 @@ export default function CreateDocumentPage() {
       overall: "",
       docType: "",
     });
+    setGeneralSubjects([{ name: "", credits: "", grade: "" }]);
     // Clear file input
     const fileInput = document.getElementById("picture") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
@@ -140,6 +176,13 @@ export default function CreateDocumentPage() {
       return;
     }
 
+    const validSubjects = generalSubjects.filter(
+      (subject) => subject.name && subject.credits && subject.grade
+    );
+    if (validSubjects.length === 0) {
+      toast.error("Please add at least one complete general subject");
+      return;
+    }
     // Create FormData object with current state values
     const formData = new FormData();
 
@@ -156,6 +199,12 @@ export default function CreateDocumentPage() {
 
     formData.append("metadata", JSON.stringify([formMetaData]));
 
+    const subjectsToSubmit = validSubjects.map((subject) => ({
+      ...subject,
+      credits: Number(subject.credits),
+    }));
+    formData.append("generalSubject", JSON.stringify(subjectsToSubmit));
+
     // Pass the FormData to the mutation
     mutation.mutate(formData);
   };
@@ -165,7 +214,7 @@ export default function CreateDocumentPage() {
       {/* Header */}
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Form Header */}
           <div className="px-6 py-6 border-b border-gray-200">
@@ -337,6 +386,111 @@ export default function CreateDocumentPage() {
                     </Select>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                  <h3 className="text-base font-medium text-gray-900 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-custom-primary" />
+                    General Subjects
+                  </h3>
+                  <Button
+                    type="button"
+                    onClick={addSubject}
+                    size="sm"
+                    className="bg-custom-primary shadow-md hover:bg-white hover:border-custom-primary hover:text-custom-primary cursor-pointer disabled:opacity-50 order-1 sm:order-2">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Subject
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {generalSubjects.map((subject, index) => (
+                  <div
+                    key={index}
+                    className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-700">
+                        Subject {index + 1}
+                      </h4>
+                      {generalSubjects.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeSubject(index)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-600">
+                          Subject Name
+                        </Label>
+                        <Input
+                          placeholder="e.g., Mathematics"
+                          value={subject.name}
+                          onChange={(e) =>
+                            handleSubjectChange(index, "name", e.target.value)
+                          }
+                          className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-600">
+                          Credits
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="6"
+                          placeholder="e.g., 3"
+                          value={subject.credits}
+                          onChange={(e) =>
+                            handleSubjectChange(
+                              index,
+                              "credits",
+                              e.target.value
+                            )
+                          }
+                          className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-600">
+                          Grade
+                        </Label>
+                        <Select
+                          value={subject.grade}
+                          onValueChange={(value) =>
+                            handleSubjectChange(index, "grade", value)
+                          }>
+                          <SelectTrigger className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20">
+                            <SelectValue placeholder="Select grade" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[70]">
+                            <SelectItem value="A+">A+</SelectItem>
+                            <SelectItem value="A">A</SelectItem>
+                            <SelectItem value="A-">A-</SelectItem>
+                            <SelectItem value="B+">B+</SelectItem>
+                            <SelectItem value="B">B</SelectItem>
+                            <SelectItem value="B-">B-</SelectItem>
+                            <SelectItem value="C+">C+</SelectItem>
+                            <SelectItem value="C">C</SelectItem>
+                            <SelectItem value="C-">C-</SelectItem>
+                            <SelectItem value="D">D</SelectItem>
+                            <SelectItem value="F">F</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* File Upload Section */}
