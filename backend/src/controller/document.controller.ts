@@ -5,8 +5,6 @@ import { connectToNetwork } from "../connection-api";
 import { DocumentPayload } from "../types/document-types";
 import {
   signDocWithPrivateKey,
-  encryptOwnerWithPK,
-  decryptOwnerMessage,
   uploadFileToIPFS,
   verifiSignature,
 } from "./../exports/doc-index";
@@ -64,6 +62,7 @@ const postingDocument = async (
         ownerId, // get the doc hash and encrypt by the owner's public key
         status, // either approved or revoked
         metadata, // additional info of user {name, class , etc.}
+        generalSubject,
         docType, // either certificate or transcript
       } = req.body;
 
@@ -74,18 +73,13 @@ const postingDocument = async (
         !issueDate ||
         !status ||
         !metadata ||
+        !generalSubject ||
         !docType
       ) {
         // Clean up the uploaded file
         fs.unlinkSync(filePath);
         return res.status(BADREQUEST).json({
-          message: `Missing Field Required ${ownerId} ${issuer}
-            ${issueDate}
-            ${status}
-            ${metadata}
-            ${docType}
-            
-            `,
+          message: `Missing Field Required`,
         });
       }
 
@@ -104,6 +98,46 @@ const postingDocument = async (
       if (!Array.isArray(parsedMetadata)) {
         fs.unlinkSync(filePath);
         return res.status(400).json({ error: "Metadata must be an array" });
+      }
+
+      //parse general subject
+
+      let parsedGeneralSubjects = [];
+      if (generalSubject) {
+        try {
+          parsedGeneralSubjects =
+            typeof generalSubject === "string"
+              ? JSON.parse(generalSubject)
+              : generalSubject;
+
+          // Validate general subjects
+          if (!Array.isArray(parsedGeneralSubjects)) {
+            fs.unlinkSync(filePath);
+            return res
+              .status(400)
+              .json({ error: "General subjects must be an array" });
+          }
+
+          // Validate each subject
+          for (const subject of parsedGeneralSubjects) {
+            if (
+              !subject.name ||
+              subject.credits === undefined ||
+              !subject.grade
+            ) {
+              fs.unlinkSync(filePath);
+              return res.status(400).json({
+                error:
+                  "Each general subject must have name, credits, and grade",
+              });
+            }
+          }
+        } catch (error) {
+          fs.unlinkSync(filePath);
+          return res
+            .status(400)
+            .json({ error: "Invalid general subjects format" });
+        }
       }
 
       //* Get the document CID from IPFS
@@ -145,6 +179,7 @@ const postingDocument = async (
         doc_signature,
         status,
         JSON.stringify(parsedMetadata),
+        JSON.stringify(parsedGeneralSubjects),
         docType
       );
 
@@ -215,7 +250,7 @@ const documentVerification = async (
     const parseResult = JSON.parse(result.toString());
 
     if (!parseResult.exists) {
-      res.status(200).json({
+      res.status(SUCCESS).json({
         status: false,
         message: "Document not found",
       });
@@ -251,6 +286,13 @@ const documentVerification = async (
     // if the verify the doc is true which mean the doc comes from the rupp
 
     gateway.disconnect();
+
+    if (doc_result.Status === "revoked") {
+      res.status(200).json({
+        message: "Documnet is revoked",
+      });
+    }
+
     if (
       verifiSignature(
         doc_result.DocHash,
@@ -261,7 +303,8 @@ const documentVerification = async (
         doc_result.DocHash,
         doc_result.DocSignature,
         certificatePem
-      )
+      ) &&
+      doc_result.Status === "approved"
     ) {
       res.status(SUCCESS).json({
         status: true,
@@ -375,6 +418,31 @@ const getDocByStudentId = async (req: Request, res: Response) => {
   }
 };
 
+// Revoked Assets
+
+const revokedDocument = async (req: Request, res: Response) => {
+  try {
+    const { gateway, contract } = await connectToNetwork();
+    const { trxId } = req.body;
+
+    const result = await contract.submitTransaction("RevokedAsset", trxId);
+    gateway.disconnect();
+
+    if (!result) {
+      res.status(NOTFOUND).json({
+        message: "Document Not Found",
+      });
+    }
+
+    res.status(SUCCESS).json({
+      message: "Revoked Successfully",
+      result: JSON.parse(result.toString()),
+    });
+  } catch (error: any) {
+    res.status(ERROR).json({ error: error.message });
+  }
+};
+
 export {
   getAllDocument,
   postingDocument,
@@ -383,4 +451,5 @@ export {
   getDocumentByStudentName,
   getDocumentByStatus,
   getDocByStudentId,
+  revokedDocument,
 };

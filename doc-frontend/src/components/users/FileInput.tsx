@@ -21,6 +21,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import { formatFileSize } from "../../utils/formatFileSize";
+import { GeneralSubjectProps } from "./../../types/doc-types";
 import jsQR from "jsqr";
 import {
   Alert,
@@ -28,7 +29,7 @@ import {
   AlertTitle,
 } from "./../../components/ui/alert";
 import { Link } from "react-router";
-
+import Loading from "./../Loading";
 export default function FileInput() {
   const MAX_FILE_SIZE = 2 * 1024 * 1024;
   const [fileName, setFileName] = useState<string | null>(null);
@@ -192,15 +193,15 @@ export default function FileInput() {
     };
   }, [selectedImage]);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Loading />;
   if (isError) return <p>Error loading documents</p>;
-
+  console.log(verify);
   return (
     <div className="w-full max-w-full h-full flex justify-center items-center py-44 bg-custom-secondary">
-      <div className="w-full max-w-sm flex flex-col gap-6">
+      <div className="w-full max-w-lg flex flex-col gap-6">
         {/* Verification Container - Show when document is verified */}
         {showVerification && verify?.status ? (
-          <div className="w-full max-w-sm flex flex-col gap-6">
+          <div className="w-full max-w-md flex flex-col gap-6">
             <div className="flex justify-start items-center gap-2">
               <ShieldCheck className="text-green-600" />
               <Label className="text-[18px] text-green-700 block font-sora font-semibold">
@@ -213,29 +214,90 @@ export default function FileInput() {
                   Document verification completed successfully
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <Alert className="flex flex-col justify-start items-start gap-2 border-green-300 bg-green-100">
-                  <div className="flex justify-start items-center gap-2">
+
+              <CardContent className="space-y-6">
+                <Alert className="flex flex-col items-start gap-3 border-green-300 bg-green-100">
+                  <div className="flex items-center gap-2">
                     <FileCheck className="h-4 w-4 text-green-600" />
                     <AlertTitle className="text-green-800">
-                      {verify?.message}
+                      {verify?.message || "Valid document"}
                     </AlertTitle>
                   </div>
-                  <AlertDescription className="flex justify-between items-center mt-2">
-                    <Button className="bg-green-600 border border-green-600 text-white flex justify-center items-center gap-2 hover:bg-white hover:text-green-600 hover:border-green-600">
-                      <Link
-                        to={verify?.result?.Doc_URL}
-                        className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        View Document
-                      </Link>
-                    </Button>
-                  </AlertDescription>
+
+                  <div className="text-sm text-gray-700">
+                    This {verify?.result?.docType} has been verified by{" "}
+                    {verify?.result?.Issuer}
+                  </div>
+
+                  <Button className="bg-green-600 border border-green-600 text-white hover:bg-white hover:text-green-600 hover:border-green-600">
+                    <Link
+                      to={verify?.result?.Doc_URL}
+                      className="flex items-center gap-2"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      <FileText className="w-4 h-4" />
+                      View Document
+                    </Link>
+                  </Button>
                 </Alert>
+
+                {/* Metadata Section */}
+                <div className="border border-gray-200 p-4 rounded-md bg-white space-y-2">
+                  <h4 className="text-sm font-medium text-gray-600">
+                    Student Information
+                  </h4>
+                  <ul className="text-sm text-gray-800 grid grid-cols-2 gap-2">
+                    <li>
+                      <strong>Name:</strong>{" "}
+                      {verify?.result?.MetaData?.[0]?.name}
+                    </li>
+                    <li>
+                      <strong>Sex:</strong> {verify?.result?.MetaData?.[0]?.sex}
+                    </li>
+                    <li>
+                      <strong>Date of Birth:</strong>{" "}
+                      {verify?.result?.MetaData?.[0]?.dob}
+                    </li>
+                    <li>
+                      <strong>Major:</strong>{" "}
+                      {verify?.result?.MetaData?.[0]?.major}
+                    </li>
+                    <li>
+                      <strong>GPA:</strong> {verify?.result?.MetaData?.[0]?.gpa}
+                    </li>
+                    <li>
+                      <strong>Overall Grade:</strong>{" "}
+                      {verify?.result?.MetaData?.[0]?.overall}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* General Subjects */}
+                <div className="border border-gray-200 p-4 rounded-md bg-white">
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">
+                    Subjects
+                  </h4>
+                  <div className="grid gap-3">
+                    {verify?.result?.GeneralSubject?.map(
+                      (subject: GeneralSubjectProps, index: number) => (
+                        <div
+                          key={index}
+                          className="p-3 rounded border border-gray-100 bg-gray-50 flex justify-between items-center text-sm text-gray-700">
+                          <div className="font-medium">{subject.name}</div>
+                          <div className="flex gap-4">
+                            <span>Credits: {subject.credits}</span>
+                            <span>Grade: {subject.grade}</span>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleReset}
                   variant="outline"
-                  className="w-full flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50">
+                  className="w-full flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50 cursor-pointer">
                   <RotateCcw className="w-4 h-4" />
                   Verify Another Document
                 </Button>

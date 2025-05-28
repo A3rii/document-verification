@@ -2,6 +2,7 @@ export interface UserState {
   _id: string;
   owner_id: string;
   name: string;
+  email: string;
   role: string;
   phone_number: string;
   avatar: string;

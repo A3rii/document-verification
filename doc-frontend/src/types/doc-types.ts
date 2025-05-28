@@ -19,6 +19,12 @@ export interface DocumentProps {
   document: File | null;
 }
 
+export interface GeneralSubjectProps {
+  name: string;
+
+  credits: string;
+  grade: string;
+}
 export interface DocumentItems {
   ID: string;
   DocHash: string;
@@ -26,6 +32,7 @@ export interface DocumentItems {
   Doc_URL: string;
   OwnerId: string;
   MetaData: MetaData[];
+  GeneralSubject: GeneralSubjectProps[];
   IssueDate: string;
   Issuer: string;
   docType: string;

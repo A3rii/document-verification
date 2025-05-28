@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router";
 import Layout from "./views/layout/admin/layout";
 import UserLayout from "./views/layout/users/layout";
+import LoginUserLayout from "./views/layout/users/loginUserLayout";
 import {
   Dashboard,
   Document,
@@ -9,7 +10,6 @@ import {
   StudentForm,
 } from "./views/pages/dashboard/index";
 import Login from "./views/pages/auth/Login";
-
 import { Home, Verify, StudentDocument } from "./views/pages/users/index";
 export default function App() {
   return (
@@ -34,7 +34,10 @@ export default function App() {
           <Route element={<UserLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/verify" element={<Verify />} />
-            <Route path="/student-document" element={<StudentDocument />} />
+          </Route>
+
+          <Route path="user" element={<LoginUserLayout />}>
+            <Route index path="certificate" element={<StudentDocument />} />
           </Route>
         </Routes>
       </Router>
