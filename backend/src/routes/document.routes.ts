@@ -7,6 +7,7 @@ import {
   getDocumentByStudentName,
   getDocumentByStatus,
   getDocByStudentId,
+  revokedDocument,
 } from "../controller/document.controller";
 
 const router = express.Router();
@@ -31,5 +32,8 @@ router.route("/student/:studentId").get(getDocByStudentId);
 // query doc by status
 
 router.route("/status/:status").get(getDocumentByStatus);
+
+// Revoked function
+router.route("/revoked").post(revokedDocument);
 
 export default router;

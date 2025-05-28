@@ -24,10 +24,15 @@ app.get("/", (req, res) => {
     endpoints,
   });
 });
+
+
+
+
 app.use("/api/v1/document", document);
 app.use("/api/v1/auth/enroll", enrollment);
 app.use("/api/v1/student", student);
 
+// mongodb connection
 connectDB().then(() => {
   app.use("/api/v1/auth", auth);
 });

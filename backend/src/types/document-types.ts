@@ -6,7 +6,11 @@ export interface StudentMeta {
   gpa: number;
   overall_grade: string;
 }
-
+export interface GeneralSubject {
+  name: string;
+  credit: number;
+  grade: string;
+}
 export interface DocumentPayload {
   id: string;
   issuer: string;
@@ -16,5 +20,6 @@ export interface DocumentPayload {
   docSignature: string;
   status: string;
   metadata: StudentMeta[];
+  generalSubject: GeneralSubject[];
   docType: string;
 }
