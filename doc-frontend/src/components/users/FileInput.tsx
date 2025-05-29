@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { formatFileSize } from "../../utils/formatFileSize";
 import { GeneralSubjectProps } from "./../../types/doc-types";
-import jsQR from "jsqr";
 import {
   Alert,
   AlertDescription,
@@ -30,8 +29,9 @@ import {
 } from "./../../components/ui/alert";
 import { Link } from "react-router";
 import Loading from "./../Loading";
+import { processPDFForQR, processImageForQR } from "./../../utils/qrExtraction";
 export default function FileInput() {
-  const MAX_FILE_SIZE = 2 * 1024 * 1024;
+  const MAX_FILE_SIZE = 6 * 1024 * 1024;
   const [fileName, setFileName] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
     undefined
@@ -116,9 +116,6 @@ export default function FileInput() {
   const getFileImage = (file: File) => {
     if (file.type.startsWith("image/")) {
       setSelectedImage(URL.createObjectURL(file));
-    } else if (file.type === "application/pdf") {
-      // For PDF files, you might want to show a PDF icon instead
-      setSelectedImage(undefined);
     } else {
       setSelectedImage(undefined);
     }
@@ -139,48 +136,28 @@ export default function FileInput() {
     } else {
       e.target.value = "";
       setSelectedImage(undefined);
+      return;
     }
 
     try {
-      const imageDataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const img = new Image();
-      img.src = imageDataUrl;
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-      });
-
-      // Extract QR code data
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      if (!context) {
-        throw new Error("Could not create canvas context");
-      }
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-      context.drawImage(img, 0, 0);
-
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-
-      if (qrCode) {
-        const hash = qrCode.data;
+      setError(""); // Clear previous errors
+      let hash;
+      // Check file type and process accordingly
+      if (file.type === "application/pdf") {
+        // Handle PDF file
+        hash = await processPDFForQR(file);
+        setHash(hash);
+      } else if (file.type.startsWith("image/")) {
+        // Handle image file (existing logic)
+        hash = await processImageForQR(file);
         setHash(hash);
       } else {
-        setError(
-          "No QR code found in the image. Please ensure the QR code is clear and visible."
-        );
+        setError("Please select a valid image or PDF file.");
+        return;
       }
     } catch (err) {
-      console.error("Error processing QR code:", err);
-      setError("Failed to process the QR code. Please try again.");
+      console.error("Error processing file:", err);
+      setError("Failed to process the file. Please try again.");
     }
   };
 
@@ -195,7 +172,8 @@ export default function FileInput() {
 
   if (isLoading) return <Loading />;
   if (isError) return <p>Error loading documents</p>;
-  console.log(verify);
+
+  console.log(hash);
   return (
     <div className="w-full max-w-full h-full flex justify-center items-center py-44 bg-custom-secondary">
       <div className="w-full max-w-lg flex flex-col gap-6">
@@ -242,8 +220,9 @@ export default function FileInput() {
                 </Alert>
 
                 {/* Metadata Section */}
+
                 <div className="border border-gray-200 p-4 rounded-md bg-white space-y-2">
-                  <h4 className="text-sm font-medium text-gray-600">
+                  <h4 className="text-sm font-medium text-green-600">
                     Student Information
                   </h4>
                   <ul className="text-sm text-gray-800 grid grid-cols-2 gap-2">
@@ -273,26 +252,28 @@ export default function FileInput() {
                 </div>
 
                 {/* General Subjects */}
-                <div className="border border-gray-200 p-4 rounded-md bg-white">
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">
-                    Subjects
-                  </h4>
-                  <div className="grid gap-3">
-                    {verify?.result?.GeneralSubject?.map(
-                      (subject: GeneralSubjectProps, index: number) => (
-                        <div
-                          key={index}
-                          className="p-3 rounded border border-gray-100 bg-gray-50 flex justify-between items-center text-sm text-gray-700">
-                          <div className="font-medium">{subject.name}</div>
-                          <div className="flex gap-4">
-                            <span>Credits: {subject.credits}</span>
-                            <span>Grade: {subject.grade}</span>
+                {verify?.result?.docType === "transcript" && (
+                  <div className="border border-gray-200 p-4 rounded-md bg-white">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">
+                      Subjects
+                    </h4>
+                    <div className="grid gap-3">
+                      {verify?.result?.GeneralSubject?.map(
+                        (subject: GeneralSubjectProps, index: number) => (
+                          <div
+                            key={index}
+                            className="p-3 rounded border border-gray-100 bg-gray-50 flex justify-between items-center text-sm text-gray-700">
+                            <div className="font-medium">{subject.name}</div>
+                            <div className="flex gap-4">
+                              <span>Credits: {subject.credits}</span>
+                              <span>Grade: {subject.grade}</span>
+                            </div>
                           </div>
-                        </div>
-                      )
-                    )}
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <Button
                   onClick={handleReset}

@@ -34,3 +34,5 @@ export interface StudentRegisterProps {
   confirm_password: string;
   phone_number: string;
 }
+
+

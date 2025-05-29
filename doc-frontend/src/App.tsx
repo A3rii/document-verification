@@ -10,6 +10,7 @@ import {
   StudentForm,
 } from "./views/pages/dashboard/index";
 import Login from "./views/pages/auth/Login";
+import AdminRegister from "./views/pages/auth/AdminRegister";
 import { Home, Verify, StudentDocument } from "./views/pages/users/index";
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           {/* public route */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register/admin" element={<AdminRegister />} />
 
           {/* admin access route  */}
           <Route path="admin" element={<Layout />}>

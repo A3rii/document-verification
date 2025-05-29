@@ -5,6 +5,7 @@ import {
   RegisterResponse,
   UserState,
   studentLogin,
+  StudentRegisterProps,
 } from "../../types/auth-type";
 import Cookies from "js-cookie";
 import authToken from "../../utils/authToken";
@@ -74,6 +75,33 @@ export const studentProfile = createAsyncThunk<UserState>(
   }
 );
 
+export const registerAdmin = createAsyncThunk(
+  "auth/registerAdmin",
+
+  async (adminData: StudentRegisterProps, thunkAPI) => {
+    try {
+      const response = await axios.post<RegisterResponse>(
+        `${import.meta.env.VITE_API_URL}/auth/admin/register`,
+        adminData
+      );
+
+      const { access_token } = response.data;
+      Cookies.set("token", access_token, { expires: 7, secure: true });
+      return { access_token };
+    } catch (err) {
+      const error = err as Error;
+
+      if (axios.isAxiosError(error)) {
+        return thunkAPI.rejectWithValue(
+          error.response?.data?.errors || error.message
+        );
+      }
+
+      return thunkAPI.rejectWithValue(error.message || "Registration failed");
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -112,6 +140,21 @@ const authSlice = createSlice({
         state.currentUser = action.payload;
       })
       .addCase(studentProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.success = false;
+      });
+
+    builder
+      .addCase(registerAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userToken = action.payload.access_token;
+      })
+      .addCase(registerAdmin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.success = false;

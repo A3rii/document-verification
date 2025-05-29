@@ -179,7 +179,8 @@ export default function CreateDocumentPage() {
     const validSubjects = generalSubjects.filter(
       (subject) => subject.name && subject.credits && subject.grade
     );
-    if (validSubjects.length === 0) {
+    // if the doc is transcript we have to validate the document in general subject
+    if (formMetaData.docType === "transcript" && validSubjects.length === 0) {
       toast.error("Please add at least one complete general subject");
       return;
     }
@@ -388,110 +389,120 @@ export default function CreateDocumentPage() {
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <h3 className="text-base font-medium text-gray-900 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-custom-primary" />
-                    General Subjects
-                  </h3>
-                  <Button
-                    type="button"
-                    onClick={addSubject}
-                    size="sm"
-                    className="bg-custom-primary shadow-md hover:bg-white hover:border-custom-primary hover:text-custom-primary cursor-pointer disabled:opacity-50 order-1 sm:order-2">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Subject
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {generalSubjects.map((subject, index) => (
-                  <div
-                    key={index}
-                    className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                    <div className="flex items-start justify-between mb-3">
-                      <h4 className="text-sm font-medium text-gray-700">
-                        Subject {index + 1}
-                      </h4>
-                      {generalSubjects.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeSubject(index)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+              {/* General Subject  */}
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-600">
-                          Subject Name
-                        </Label>
-                        <Input
-                          placeholder="e.g., Mathematics"
-                          value={subject.name}
-                          onChange={(e) =>
-                            handleSubjectChange(index, "name", e.target.value)
-                          }
-                          className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-600">
-                          Credits
-                        </Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          max="6"
-                          placeholder="e.g., 3"
-                          value={subject.credits}
-                          onChange={(e) =>
-                            handleSubjectChange(
-                              index,
-                              "credits",
-                              e.target.value
-                            )
-                          }
-                          className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-600">
-                          Grade
-                        </Label>
-                        <Select
-                          value={subject.grade}
-                          onValueChange={(value) =>
-                            handleSubjectChange(index, "grade", value)
-                          }>
-                          <SelectTrigger className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20">
-                            <SelectValue placeholder="Select grade" />
-                          </SelectTrigger>
-                          <SelectContent className="z-[70]">
-                            <SelectItem value="A+">A+</SelectItem>
-                            <SelectItem value="A">A</SelectItem>
-                            <SelectItem value="A-">A-</SelectItem>
-                            <SelectItem value="B+">B+</SelectItem>
-                            <SelectItem value="B">B</SelectItem>
-                            <SelectItem value="B-">B-</SelectItem>
-                            <SelectItem value="C+">C+</SelectItem>
-                            <SelectItem value="C">C</SelectItem>
-                            <SelectItem value="C-">C-</SelectItem>
-                            <SelectItem value="D">D</SelectItem>
-                            <SelectItem value="F">F</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+              {formMetaData.docType === "transcript" && (
+                <>
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                      <h3 className="text-base font-medium text-gray-900 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-custom-primary" />
+                        General Subjects
+                      </h3>
+                      <Button
+                        type="button"
+                        onClick={addSubject}
+                        size="sm"
+                        className="bg-custom-primary shadow-md hover:bg-white hover:border-custom-primary hover:text-custom-primary cursor-pointer disabled:opacity-50 order-1 sm:order-2">
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Subject
+                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-4">
+                    {generalSubjects.map((subject, index) => (
+                      <div
+                        key={index}
+                        className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                        <div className="flex items-start justify-between mb-3">
+                          <h4 className="text-sm font-medium text-gray-700">
+                            Subject {index + 1}
+                          </h4>
+                          {generalSubjects.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSubject(index)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-600">
+                              Subject Name
+                            </Label>
+                            <Input
+                              placeholder="e.g., Mathematics"
+                              value={subject.name}
+                              onChange={(e) =>
+                                handleSubjectChange(
+                                  index,
+                                  "name",
+                                  e.target.value
+                                )
+                              }
+                              className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-600">
+                              Credits
+                            </Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="6"
+                              placeholder="e.g., 3"
+                              value={subject.credits}
+                              onChange={(e) =>
+                                handleSubjectChange(
+                                  index,
+                                  "credits",
+                                  e.target.value
+                                )
+                              }
+                              className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-600">
+                              Grade
+                            </Label>
+                            <Select
+                              value={subject.grade}
+                              onValueChange={(value) =>
+                                handleSubjectChange(index, "grade", value)
+                              }>
+                              <SelectTrigger className="border-gray-200 focus:border-blue-400 focus:ring-blue-400/20">
+                                <SelectValue placeholder="Select grade" />
+                              </SelectTrigger>
+                              <SelectContent className="z-[70]">
+                                <SelectItem value="A+">A+</SelectItem>
+                                <SelectItem value="A">A</SelectItem>
+                                <SelectItem value="A-">A-</SelectItem>
+                                <SelectItem value="B+">B+</SelectItem>
+                                <SelectItem value="B">B</SelectItem>
+                                <SelectItem value="B-">B-</SelectItem>
+                                <SelectItem value="C+">C+</SelectItem>
+                                <SelectItem value="C">C</SelectItem>
+                                <SelectItem value="C-">C-</SelectItem>
+                                <SelectItem value="D">D</SelectItem>
+                                <SelectItem value="F">F</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
               {/* File Upload Section */}
               <div className="space-y-6">
