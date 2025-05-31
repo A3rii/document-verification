@@ -70,7 +70,7 @@ export default function AdminRegister() {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-custom-primary rounded-full mb-4">
               <Shield className="w-8 h-8 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground mb-2">
@@ -193,7 +193,10 @@ export default function AdminRegister() {
               )}
 
               {/* Submit Button */}
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-10 px-6 bg-custom-primary hover:bg-red-700 cursor-pointer w-full">
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>

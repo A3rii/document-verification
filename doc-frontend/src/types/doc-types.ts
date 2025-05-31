@@ -21,7 +21,6 @@ export interface DocumentProps {
 
 export interface GeneralSubjectProps {
   name: string;
-
   credits: string;
   grade: string;
 }

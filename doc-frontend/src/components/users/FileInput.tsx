@@ -8,28 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "./../../components/ui/card";
-import { Button } from "./../../components/ui/button";
+
 import { useQuery } from "@tanstack/react-query";
 import { verifyDocumentHash } from "../../services/document-service/verify-doc";
-import {
-  Paperclip,
-  FileX,
-  File,
-  ShieldCheck,
-  FileText,
-  RotateCcw,
-  FileCheck,
-} from "lucide-react";
+import { Paperclip, FileX, File, ShieldCheck } from "lucide-react";
 import { formatFileSize } from "../../utils/formatFileSize";
-import { GeneralSubjectProps } from "./../../types/doc-types";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "./../../components/ui/alert";
-import { Link } from "react-router";
 import Loading from "./../Loading";
 import { processPDFForQR, processImageForQR } from "./../../utils/qrExtraction";
+import { Approved, Counterfeit } from "../../views/pages/users/template";
 export default function FileInput() {
   const MAX_FILE_SIZE = 6 * 1024 * 1024;
   const [fileName, setFileName] = useState<string | null>(null);
@@ -140,7 +126,7 @@ export default function FileInput() {
     }
 
     try {
-      setError(""); // Clear previous errors
+      setError("");
       let hash;
       // Check file type and process accordingly
       if (file.type === "application/pdf") {
@@ -155,9 +141,8 @@ export default function FileInput() {
         setError("Please select a valid image or PDF file.");
         return;
       }
-    } catch (err) {
-      console.error("Error processing file:", err);
-      setError("Failed to process the file. Please try again.");
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
@@ -172,166 +157,14 @@ export default function FileInput() {
 
   if (isLoading) return <Loading />;
   if (isError) return <p>Error loading documents</p>;
-
-  console.log(hash);
   return (
     <div className="w-full max-w-full h-full flex justify-center items-center py-44 bg-custom-secondary">
       <div className="w-full max-w-lg flex flex-col gap-6">
         {/* Verification Container - Show when document is verified */}
         {showVerification && verify?.status ? (
-          <div className="w-full max-w-md flex flex-col gap-6">
-            <div className="flex justify-start items-center gap-2">
-              <ShieldCheck className="text-green-600" />
-              <Label className="text-[18px] text-green-700 block font-sora font-semibold">
-                Document Verified
-              </Label>
-            </div>
-            <Card className="border-green-200">
-              <CardHeader>
-                <CardDescription className="text-green-700">
-                  Document verification completed successfully
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                <Alert className="flex flex-col items-start gap-3 border-green-300 bg-green-100">
-                  <div className="flex items-center gap-2">
-                    <FileCheck className="h-4 w-4 text-green-600" />
-                    <AlertTitle className="text-green-800">
-                      {verify?.message || "Valid document"}
-                    </AlertTitle>
-                  </div>
-
-                  <div className="text-sm text-gray-700">
-                    This {verify?.result?.docType} has been verified by{" "}
-                    {verify?.result?.Issuer}
-                  </div>
-
-                  <Button className="bg-green-600 border border-green-600 text-white hover:bg-white hover:text-green-600 hover:border-green-600">
-                    <Link
-                      to={verify?.result?.Doc_URL}
-                      className="flex items-center gap-2"
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      <FileText className="w-4 h-4" />
-                      View Document
-                    </Link>
-                  </Button>
-                </Alert>
-
-                {/* Metadata Section */}
-
-                <div className="border border-gray-200 p-4 rounded-md bg-white space-y-2">
-                  <h4 className="text-sm font-medium text-green-600">
-                    Student Information
-                  </h4>
-                  <ul className="text-sm text-gray-800 grid grid-cols-2 gap-2">
-                    <li>
-                      <strong>Name:</strong>{" "}
-                      {verify?.result?.MetaData?.[0]?.name}
-                    </li>
-                    <li>
-                      <strong>Sex:</strong> {verify?.result?.MetaData?.[0]?.sex}
-                    </li>
-                    <li>
-                      <strong>Date of Birth:</strong>{" "}
-                      {verify?.result?.MetaData?.[0]?.dob}
-                    </li>
-                    <li>
-                      <strong>Major:</strong>{" "}
-                      {verify?.result?.MetaData?.[0]?.major}
-                    </li>
-                    <li>
-                      <strong>GPA:</strong> {verify?.result?.MetaData?.[0]?.gpa}
-                    </li>
-                    <li>
-                      <strong>Overall Grade:</strong>{" "}
-                      {verify?.result?.MetaData?.[0]?.overall}
-                    </li>
-                  </ul>
-                </div>
-
-                {/* General Subjects */}
-                {verify?.result?.docType === "transcript" && (
-                  <div className="border border-gray-200 p-4 rounded-md bg-white">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">
-                      Subjects
-                    </h4>
-                    <div className="grid gap-3">
-                      {verify?.result?.GeneralSubject?.map(
-                        (subject: GeneralSubjectProps, index: number) => (
-                          <div
-                            key={index}
-                            className="p-3 rounded border border-gray-100 bg-gray-50 flex justify-between items-center text-sm text-gray-700">
-                            <div className="font-medium">{subject.name}</div>
-                            <div className="flex gap-4">
-                              <span>Credits: {subject.credits}</span>
-                              <span>Grade: {subject.grade}</span>
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="w-full flex items-center gap-2 border-green-300 text-green-700 hover:bg-green-50 cursor-pointer">
-                  <RotateCcw className="w-4 h-4" />
-                  Verify Another Document
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <Approved certificate={verify} handleReset={handleReset} />
         ) : showVerification ? (
-          <div className="w-full max-w-sm flex flex-col gap-6">
-            <div className="flex justify-start items-center gap-2">
-              <ShieldCheck className="text-red-600" />
-              <Label className="text-[18px] text-red-700 block font-sora font-semibold">
-                Document Invalid
-              </Label>
-            </div>
-            <Card className="border-red-200">
-              <CardHeader>
-                <CardDescription className="text-red-700">
-                  Document verification failed - This document is not authentic
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Alert className="flex flex-col justify-start items-start gap-2 border-red-300 bg-red-100">
-                  <div className="flex justify-start items-center gap-2">
-                    <FileX className="h-4 w-4 text-red-600" />
-                    <AlertTitle className="text-red-800">
-                      Document is Counterfeit
-                    </AlertTitle>
-                  </div>
-                  <AlertDescription className="mt-2">
-                    <div className="bg-white p-3 rounded-lg border border-red-200">
-                      <p className="text-sm text-red-700 mb-2">
-                        This document could not be verified because:
-                      </p>
-                      <ul className="text-sm text-red-600 space-y-1">
-                        <li>
-                          • Document is not issued by a verified authority
-                        </li>
-                        <li>• QR code has been tampered with or is fake</li>
-                        <li>• Document may have been forged or altered</li>
-                      </ul>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="w-full flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50">
-                  <RotateCcw className="w-4 h-4" />
-                  Try Another Document
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <Counterfeit handleReset={handleReset} />
         ) : null}
 
         {/* Input Container - Show when not in verification mode */}
@@ -342,7 +175,7 @@ export default function FileInput() {
               <Label
                 htmlFor="certificate"
                 className="text-[18px] text-neutral-600 block font-sora">
-                Verify Your Certificates
+                Verify Your Certificate / Transcript
               </Label>
             </div>
 
@@ -360,7 +193,7 @@ export default function FileInput() {
                 className="flex items-center gap-3 p-3 border border-custom-primary rounded-lg cursor-pointer bg-white hover:bg-neutral-50 transition-colors">
                 <Paperclip className="w-4 h-4 text-neutral-400" />
                 <span className="text-sm text-neutral-600">
-                  {fileName || "Choose file in PDF"}
+                  {fileName || "Choose file in (PDF,PNG,JPG)"}
                 </span>
               </Label>
               <p className="text-sm text-black mt-2">

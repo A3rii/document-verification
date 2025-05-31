@@ -11,6 +11,7 @@ export type DocumentVerification = {
 };
 
 export interface StudentMeta {
+  overall: ReactNode;
   name: string;
   sex: string;
   dob: string;
@@ -19,6 +20,8 @@ export interface StudentMeta {
   overall_grade: string;
 }
 export interface DocumentItems {
+  GeneralSubject: any;
+  Doc_URL: To;
   ID: string;
   docType: string;
   IssueDate: string;

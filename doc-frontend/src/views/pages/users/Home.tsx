@@ -6,7 +6,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="w-container mx-auto min-h-[50vh] flex items-center px-4">
+    <div className="w-container mx-auto min-h-[50vh] flex items-center px-4   m-22">
       <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 md:gap-12">
         {/* Text Content */}
         <div className="flex flex-col items-start gap-6 flex-1">
@@ -34,11 +34,11 @@ export default function Home() {
         </div>
 
         {/* Illustration */}
-        <div className="flex-1 flex justify-center ">
+        <div className="flex-1 flex justify-end items-end ">
           <img
             src={Illustrate}
             alt="Certificate verification illustration"
-            className="w-72 h-72 md:w-80 md:h-80 lg:w-100 lg:h-100 object-cover max-w-full"
+            className="w-72 h-72 md:w-80 md:h-80 lg:w-104 lg:h-104 object-cover max-w-full"
           />
         </div>
       </div>
