@@ -5,6 +5,7 @@ import enrollment from "./routes/register.routes";
 import student from "./routes/student.routes";
 import morgan from "morgan";
 import auth from "./routes/auth.routes";
+import qrcode from "./routes/qrcode.routes";
 import connectDB from "./configs/database";
 import cors from "cors";
 import expressListEndpoints from "express-list-endpoints";
@@ -25,9 +26,6 @@ app.get("/", (req, res) => {
   });
 });
 
-
-
-
 app.use("/api/v1/document", document);
 app.use("/api/v1/auth/enroll", enrollment);
 app.use("/api/v1/student", student);
@@ -35,6 +33,7 @@ app.use("/api/v1/student", student);
 // mongodb connection
 connectDB().then(() => {
   app.use("/api/v1/auth", auth);
+  app.use("/api/v1/qrcode", qrcode);
 });
 
 export default app;

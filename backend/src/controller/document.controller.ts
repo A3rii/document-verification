@@ -13,6 +13,8 @@ import fs from "fs";
 import { getKeyFromWallet } from "../utils/extractKeyFromWallet";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import QrCode from "./../models/qrcode.model";
+import Student from "./../models/student.model";
 
 const SUCCESS = 200;
 const ERROR = 500;
@@ -144,7 +146,7 @@ const postingDocument = async (
       const doc_cid = file.cid;
       const doc_url = file.url;
 
-      //* Sign document CID with owner's secret key
+      //* Sign document CID with owner's secret key , the ownerId is a name from wallet
       const student_pk = getKeyFromWallet(walletPath, ownerId);
       if (student_pk === null) {
         throw new Error("Failed to retrieve identity from student wallet");
@@ -183,6 +185,15 @@ const postingDocument = async (
         docType
       );
 
+      // get student id
+      const getStudent = await Student.findOne({ name: ownerId });
+
+      const qrcode = new QrCode({
+        studentId: getStudent && getStudent._id,
+        docHash: doc_cid,
+      });
+      // save the document info in the
+      await qrcode.save();
       // Clean up - remove the temp file
       fs.unlinkSync(filePath);
 
@@ -214,6 +225,7 @@ const getAllDocument = async (req: Request, res: Response): Promise<void> => {
 
     res.status(SUCCESS).json({
       message: "success",
+      totalDocument: JSON.parse(result.toString()).length,
       result: JSON.parse(result.toString()),
     });
   } catch (err: any) {
@@ -257,13 +269,15 @@ const documentVerification = async (
       return;
     }
 
+    const getQrfromStduent = await QrCode.findOne({ docHash });
+
     // getting data from the document
     const doc_result = parseResult.data;
 
     // getting private key from owner wallet
     const ownerWallet = getKeyFromWallet(
       walletPath,
-      doc_result?.MetaData?.[0].name // owner wallet's name
+      doc_result?.MetaData?.[0].name
     );
 
     // check type safety
@@ -291,6 +305,18 @@ const documentVerification = async (
       res.status(200).json({
         message: "Documnet is revoked",
       });
+    }
+
+    //check if the qr code which store in doc is equal to the world state of blockchain
+    if (getQrfromStduent?.docHash !== doc_result.DocHash) return;
+
+    // checking for permission for qr code access
+    if (!getQrfromStduent?.isPublic) {
+      res.status(200).json({
+        message: "Owner won't allow to see the document",
+        result: getQrfromStduent?.isPublic,
+      });
+      return;
     }
 
     if (
@@ -389,6 +415,7 @@ const getDocumentByStatus = async (
 
     res.status(SUCCESS).json({
       message: "success",
+      totalDocument: JSON.parse(result.toString()).length,
       result: JSON.parse(result.toString()),
     });
   } catch (error: any) {

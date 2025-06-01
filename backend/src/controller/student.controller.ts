@@ -7,6 +7,7 @@ const getAllStudents = async (req: Request, res: Response): Promise<void> => {
     const users = await Student.find({ role: { $ne: "admin" } }).select(
       "-role"
     );
+
     res.status(200).json({
       users,
     });
@@ -18,4 +19,20 @@ const getAllStudents = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { getAllStudents };
+const countAllStudents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const usersCount = await Student.find({ role: { $ne: "admin" } })
+      .select("-role")
+      .countDocuments();
+
+    res.status(200).json({
+      totalStudents: usersCount,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+export { getAllStudents, countAllStudents };
