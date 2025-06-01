@@ -32,4 +32,19 @@ const getDocByOwnerName = async (name: string) => {
   }
 };
 
-export { getAllDocument, getDocByOwnerName };
+const getDocCountByStaus = async (status: string) => {
+  try {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/document/status/${status}`
+    );
+
+    return data.totalDocument;
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(err.message);
+    } else {
+      throw new Error("An unknown error occurred");
+    }
+  }
+};
+export { getAllDocument, getDocByOwnerName,  getDocCountByStaus  };

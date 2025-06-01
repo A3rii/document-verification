@@ -157,6 +157,8 @@ export default function FileInput() {
 
   if (isLoading) return <Loading />;
   if (isError) return <p>Error loading documents</p>;
+
+  console.log(verify);
   return (
     <div className="w-full max-w-full h-full flex justify-center items-center py-44 bg-custom-secondary">
       <div className="w-full max-w-lg flex flex-col gap-6">
@@ -164,7 +166,7 @@ export default function FileInput() {
         {showVerification && verify?.status ? (
           <Approved certificate={verify} handleReset={handleReset} />
         ) : showVerification ? (
-          <Counterfeit handleReset={handleReset} />
+          <Counterfeit certificate={verify} handleReset={handleReset} />
         ) : null}
 
         {/* Input Container - Show when not in verification mode */}

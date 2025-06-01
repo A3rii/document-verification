@@ -13,7 +13,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, Check, X } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "./../../../components/ui/button";
 import Loading from "../../../components/Loading";
 import {
@@ -27,7 +26,7 @@ import {
 import { Badge } from "./../../../components/ui/badge";
 import { DocumentItems, StudentMeta } from "./../../../types/admin-table-type";
 import { getAllDocument } from "../../../services/document-service/get-all-doc";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { revokedDocument } from "./../../../services/document-service/revoked-doc";
 import { toast } from "sonner";
 

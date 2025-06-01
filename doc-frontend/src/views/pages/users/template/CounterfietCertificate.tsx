@@ -14,12 +14,18 @@ import {
 } from "../../../../components/ui/alert";
 
 interface CertificateProps {
+  certificate: {
+    message: string;
+    result: boolean;
+  };
   handleReset: () => void;
 }
 
 export default function CounterfietCertificate({
+  certificate,
   handleReset,
 }: CertificateProps) {
+  console.log(certificate);
   return (
     <>
       <div className="w-full max-w-sm flex flex-col gap-6">
@@ -29,43 +35,72 @@ export default function CounterfietCertificate({
             Document Invalid
           </Label>
         </div>
-        <Card className="border-red-200">
-          <CardHeader>
-            <CardDescription className="text-red-700">
-              Document verification failed - This document is not authentic
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="flex flex-col justify-start items-start gap-2 border-red-300 bg-red-100">
-              <div className="flex justify-start items-center gap-2">
-                <FileX className="h-4 w-4 text-red-600" />
-                <AlertTitle className="text-red-800">
-                  Document is Counterfeit
-                </AlertTitle>
-              </div>
-              <AlertDescription className="mt-2">
-                <div className="bg-white p-3 rounded-lg border border-red-200">
-                  <p className="text-sm text-red-700 mb-2">
-                    This document could not be verified because:
-                  </p>
-                  <ul className="text-sm text-red-600 space-y-1">
-                    <li>• Document is not issued by a verified authority</li>
-                    <li>• QR code has been tampered with or is fake</li>
-                    <li>• Document may have been forged or altered</li>
-                  </ul>
+        {!certificate?.result ? (
+          <>
+            <Card className="border-red-200">
+              <CardHeader>
+                <CardDescription className="text-red-700">
+                  {certificate?.message}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert className="flex flex-col justify-start items-start gap-2 border-red-300 bg-red-100">
+                  <div className="flex justify-start items-center gap-2">
+                    <FileX className="h-4 w-4 text-red-600" />
+                    <AlertTitle className="text-red-800">
+                      You don't have a permission to see the documnet
+                    </AlertTitle>
+                  </div>
+                </Alert>
+                <Button
+                  onClick={handleReset}
+                  variant="outline"
+                  className="w-full flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50">
+                  <RotateCcw className="w-4 h-4" />
+                  Try Another Document
+                </Button>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardDescription className="text-red-700">
+                Document verification failed - This document is not authentic
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="flex flex-col justify-start items-start gap-2 border-red-300 bg-red-100">
+                <div className="flex justify-start items-center gap-2">
+                  <FileX className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800">
+                    Document is Counterfeit
+                  </AlertTitle>
                 </div>
-              </AlertDescription>
-            </Alert>
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="w-full flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50">
-              <RotateCcw className="w-4 h-4" />
-              Try Another Document
-            </Button>
-          </CardContent>
-        </Card>
+                <AlertDescription className="mt-2">
+                  <div className="bg-white p-3 rounded-lg border border-red-200">
+                    <p className="text-sm text-red-700 mb-2">
+                      This document could not be verified because:
+                    </p>
+                    <ul className="text-sm text-red-600 space-y-1">
+                      <li>• Document is not issued by a verified authority</li>
+                      <li>• QR code has been tampered with or is fake</li>
+                      <li>• Document may have been forged or altered</li>
+                    </ul>
+                  </div>
+                </AlertDescription>
+              </Alert>
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="w-full flex items-center gap-2 border-red-300 text-red-700 hover:bg-red-50">
+                <RotateCcw className="w-4 h-4" />
+                Try Another Document
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </>
   );
-}   
+}
