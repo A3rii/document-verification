@@ -37,3 +37,15 @@ export interface DocumentItems {
   docType: string;
   Status: DocumentStatus;
 }
+
+export interface QrDataResult {
+  tempPassword: string;
+  accessToken: string;
+  passwordExpiresAt: Date;
+}
+
+export interface VerifyItems {
+  status: boolean;
+  message: string;
+  result: DocumentItems[];
+}

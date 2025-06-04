@@ -89,7 +89,7 @@ export default function Dashboard() {
       <StatCard
         title="Approved Documents"
         count={approvedDocument}
-        description="The documents which approved by Royal University of Phnom Penh"
+        description="Approved Document from RUPP"
         icon={FileCheck}
       />
 

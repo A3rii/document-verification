@@ -37,7 +37,6 @@ export default function FileInput() {
     queryFn: () => verifyDocumentHash(hash),
     enabled: !!hash,
     refetchOnWindowFocus: true,
-    staleTime: 5 * 60 * 1000,
   });
 
   // Check if document is valid and show verification container
@@ -158,7 +157,6 @@ export default function FileInput() {
   if (isLoading) return <Loading />;
   if (isError) return <p>Error loading documents</p>;
 
-  console.log(verify);
   return (
     <div className="w-full max-w-full h-full flex justify-center items-center py-44 bg-custom-secondary">
       <div className="w-full max-w-lg flex flex-col gap-6">
@@ -195,7 +193,7 @@ export default function FileInput() {
                 className="flex items-center gap-3 p-3 border border-custom-primary rounded-lg cursor-pointer bg-white hover:bg-neutral-50 transition-colors">
                 <Paperclip className="w-4 h-4 text-neutral-400" />
                 <span className="text-sm text-neutral-600">
-                  {fileName || "Choose file in (PDF,PNG,JPG)"}
+                  {fileName || "Choose file that contain RUPP Qr code"}
                 </span>
               </Label>
               <p className="text-sm text-black mt-2">

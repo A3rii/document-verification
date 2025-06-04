@@ -1,6 +1,9 @@
 import { Card, CardContent, CardFooter } from "./../../../components/ui/card";
 import { getDocByOwnerName } from "./../../../services/document-service/get-all-doc";
-import { getQrFootPrintStatus } from "./../../../services/qrcode-service/get-qrcode-hash";
+import {
+  getQrFootPrintStatus,
+  getQrCodeData,
+} from "./../../../services/qrcode-service/get-qrcode-hash";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useCurrentUser from "../../../hooks/use-current-user";
 import { DocumentItems } from "./../../../types/doc-types";
@@ -18,6 +21,7 @@ import {
 import Loading from "./../../../components/Loading";
 import { Badge } from "../../../components/ui/badge";
 import QrPopover from "./../../../components/users/QrPopver";
+import KeyPopover from "../../../components/users/KeyPopover";
 import { updateDocumentAccessStatus } from "./../../../services/qrcode-service/update-qrcode-permission";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -26,7 +30,7 @@ export default function StudentDocument() {
   const user = useCurrentUser();
   const queryClient = useQueryClient();
   const [permissionStatus, setPermissionStatus] = useState<boolean>(false);
-
+  console.log(permissionStatus);
   const {
     data: documentsById = [],
     isLoading,
@@ -37,9 +41,16 @@ export default function StudentDocument() {
     enabled: !!user?.name,
   });
 
+  // Only query for status
   const { data: documentAllowStatus = false } = useQuery({
     queryKey: ["getQrFootPrintStatus", user?._id],
     queryFn: () => getQrFootPrintStatus(user!._id as string),
+    enabled: !!user?._id,
+  });
+
+  const { data: qrcodeData = [] } = useQuery({
+    queryKey: ["getQrCodeData", user?._id],
+    queryFn: () => getQrCodeData(user!._id as string),
     enabled: !!user?._id,
   });
 
@@ -71,7 +82,7 @@ export default function StudentDocument() {
       return { previousStatus };
     },
 
-    onSuccess: (variables) => {
+    onSuccess: () => {
       // Invalidate and refetch queries to ensure data consistency
       queryClient.invalidateQueries({
         queryKey: ["getQrFootPrintStatus", user?._id],
@@ -80,9 +91,14 @@ export default function StudentDocument() {
         queryKey: ["getDocByOwnerName", user?.name],
       });
 
-      toast.success(
-        `Document Permission ${variables.status ? "Allowed" : "Private"}`
-      );
+      const message = `Document Permission ${
+        permissionStatus ? "Allowed" : "Private"
+      }`;
+      if (permissionStatus) {
+        toast.success(message);
+      } else {
+        toast.error(message);
+      }
     },
 
     onError: (error) => {
@@ -150,7 +166,8 @@ export default function StudentDocument() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex-shrink-0">
+                  <div className="flex justify-center items-center gap-2 flex-shrink-0">
+                    <KeyPopover data={qrcodeData} />
                     <QrPopover data={data} />
                   </div>
                 </div>

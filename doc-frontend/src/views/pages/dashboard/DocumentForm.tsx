@@ -159,17 +159,17 @@ export default function CreateDocumentPage() {
 
   // submitting the document
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+    e.preventDefault(); 
 
     // Validation
     if (
       !formMetaData.name ||
-      !formMetaData.dob ||
+      !formMetaData.dob ||   
       !formMetaData.sex ||
       !formMetaData.major ||
       !formMetaData.overall ||
       !formMetaData.docType ||
-      !selectedFile ||
+      !selectedFile ||                                                                                                                                                                            
       formMetaData.gpa <= 0
     ) {
       toast.error("Please fill all the requirements");
