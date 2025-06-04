@@ -3,6 +3,7 @@
 import { Request, Response } from "express";
 import { connectToNetwork } from "../connection-api";
 import { DocumentPayload } from "../types/document-types";
+import { QrcodePayload } from "../types/qrcode-types";
 import {
   signDocWithPrivateKey,
   uploadFileToIPFS,
@@ -15,7 +16,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import QrCode from "./../models/qrcode.model";
 import Student from "./../models/student.model";
-
+import jwt from "jsonwebtoken";
 const SUCCESS = 200;
 const ERROR = 500;
 const NOTFOUND = 404;
@@ -248,6 +249,129 @@ const getDocumentById = async (req: Request, res: Response): Promise<void> => {
     res.status(ERROR).json({ error: error.message });
   }
 };
+
+// verify  document by its hash
+// const documentVerification = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   const { gateway, contract } = await connectToNetwork();
+//   const walletPath = path.resolve(__dirname, "../../wallet");
+//   try {
+//     const { docHash } = req.params;
+//     const { password } = req.body;
+//     const result = await contract.evaluateTransaction("VerifyAsset", docHash);
+//     const parseResult = JSON.parse(result.toString());
+
+//     if (!parseResult.exists) {
+//       res.status(SUCCESS).json({
+//         status: false,
+//         message: "Document not found",
+//       });
+//       return;
+//     }
+
+//     const getQrfromStduent = await QrCode.findOne({ docHash });
+
+//     // getting data from the document
+//     const doc_result = parseResult.data;
+
+//     // getting private key from owner wallet
+//     const ownerWallet = getKeyFromWallet(
+//       walletPath,
+//       doc_result?.MetaData?.[0].name
+//     );
+
+//     // check type safety
+//     if (ownerWallet === null) {
+//       throw new Error("Failed to retrieve identity from wallet");
+//     }
+
+//     //getting identity of the owner
+//     const ownerCertificate = ownerWallet.certificatePem;
+
+//     const adminWallet = getKeyFromWallet(
+//       walletPath,
+//       "rupp" // admin wallet's name
+//     );
+//     if (adminWallet === null) {
+//       throw new Error("Failed to retrieve identity from wallet");
+//     }
+//     const { certificatePem } = adminWallet;
+
+//     // if the verify the doc is true which mean the doc comes from the rupp
+
+//     gateway.disconnect();
+
+//     if (doc_result.Status === "revoked") {
+//       res.status(200).json({
+//         message: "Documnet is revoked",
+//       });
+//     }
+
+//     //checking password from user
+//     if (getQrfromStduent?.accessToken &&  getQrfromStduent?.isPublic) {
+//       const JWT_SECRET = process.env.JWT_SECRET;
+//       if (!JWT_SECRET) {
+//         throw new Error("JWT_SECRET not defined");
+//       }
+//       const decoded = jwt.verify(
+//         getQrfromStduent.accessToken,
+//         JWT_SECRET
+//       ) as QrcodePayload;
+
+//       if (decoded.tempPassword !== password.toUpperCase()) {
+//         res.status(401).json({
+//           status: false,
+//           message: "Token validation failed",
+//         });
+//         return;
+//       }
+//     }
+
+//     //check if the qr code which store in doc is equal to the world state of blockchain
+//     if (getQrfromStduent?.docHash !== doc_result.DocHash) return;
+
+//     // checking for permission for qr code access
+//     if (!getQrfromStduent?.isPublic) {
+//       res.status(200).json({
+//         message: "Owner won't allow to see the document",
+//         result: getQrfromStduent?.isPublic,
+//       });
+//       return;
+//     }
+
+//     if (
+//       verifiSignature(
+//         doc_result.DocHash,
+//         doc_result.OwnerId,
+//         ownerCertificate
+//       ) &&
+//       verifiSignature(
+//         doc_result.DocHash,
+//         doc_result.DocSignature,
+//         certificatePem
+//       ) &&
+//       doc_result.Status === "approved"
+//     ) {
+//       res.status(SUCCESS).json({
+//         status: true,
+//         message: "Document is valid",
+//         result: parseResult.data,
+//       });
+//     } else {
+//       res.status(200).json({
+//         message: "Document is counterfeit",
+//       });
+//     }
+//   } catch (error: any) {
+//     gateway.disconnect();
+//     res.status(ERROR).json({
+//       message: false,
+//       error: error.message,
+//     });
+//   }
+// };
 
 // verify  document by its hash
 const documentVerification = async (
