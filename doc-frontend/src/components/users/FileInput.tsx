@@ -37,7 +37,6 @@ export default function FileInput() {
     queryFn: () => verifyDocumentHash(hash),
     enabled: !!hash,
     refetchOnWindowFocus: true,
-    staleTime: 5 * 60 * 1000,
   });
 
   // Check if document is valid and show verification container
