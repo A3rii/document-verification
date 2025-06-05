@@ -1,19 +1,87 @@
-"use strict";
 /*
  * SPDX-License-Identifier: Apache-2.0
  */
-// Deterministic JSON.stringify()
-import { Context, Contract, Info } from "fabric-contract-api";
 
+// ====CHAINCODE EXECUTION SAMPLES (CLI) ==================
+
+// ==== Invoke assets ====
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["CreateAsset","asset1","blue","35","Tom","100"]}'
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["CreateAsset","asset2","red","50","Tom","150"]}'
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["CreateAsset","asset3","blue","70","Tom","200"]}'
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["TransferAsset","asset2","jerry"]}'
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["TransferAssetByColor","blue","jerry"]}'
+// peer chaincode invoke -C CHANNEL_NAME -n asset_transfer -c '{"Args":["DeleteAsset","asset1"]}'
+
+// ==== Query assets ====
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["ReadAsset","asset1"]}'
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["GetAssetsByRange","asset1","asset3"]}'
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["GetAssetHistory","asset1"]}'
+
+// Rich Query (Only supported if CouchDB is used as state database):
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["QueryAssetsByOwner","Tom"]}' output issue
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["QueryAssets","{\"selector\":{\"owner\":\"Tom\"}}"]}'
+
+// Rich Query with Pagination (Only supported if CouchDB is used as state database):
+// peer chaincode query -C CHANNEL_NAME -n asset_transfer -c '{"Args":["QueryAssetsWithPagination","{\"selector\":{\"owner\":\"Tom\"}}","3",""]}'
+
+// INDEXES TO SUPPORT COUCHDB RICH QUERIES
+//
+// Indexes in CouchDB are required in order to make JSON queries efficient and are required for
+// any JSON query with a sort. Indexes may be packaged alongside
+// chaincode in a META-INF/statedb/couchdb/indexes directory. Each index must be defined in its own
+// text file with extension *.json with the index definition formatted in JSON following the
+// CouchDB index JSON syntax as documented at:
+// http://docs.couchdb.org/en/2.3.1/api/database/find.html#db-index
+//
+// This asset transfer ledger example chaincode demonstrates a packaged
+// index which you can find in META-INF/statedb/couchdb/indexes/indexOwner.json.
+//
+// If you have access to the your peer's CouchDB state database in a development environment,
+// you may want to iteratively test various indexes in support of your chaincode queries.  You
+// can use the CouchDB Fauxton interface or a command line curl utility to create and update
+// indexes. Then once you finalize an index, include the index definition alongside your
+// chaincode in the META-INF/statedb/couchdb/indexes directory, for packaging and deployment
+// to managed environments.
+//
+// In the examples below you can find index definitions that support asset transfer ledger
+// chaincode queries, along with the syntax that you can use in development environments
+// to create the indexes in the CouchDB Fauxton interface or a curl command line utility.
+//
+
+// Index for docType, owner.
+//
+// Example curl command line to define index in the CouchDB channel_chaincode database
+// curl -i -X POST -H "Content-Type: application/json" -d "{\"index\":{\"fields\":[\"docType\",\"owner\"]},\"name\":\"indexOwner\",\"ddoc\":\"indexOwnerDoc\",\"type\":\"json\"}" http://hostname:port/myc1_assets/_index
+//
+
+// Index for docType, owner, size (descending order).
+//
+// Example curl command line to define index in the CouchDB channel_chaincode database
+// curl -i -X POST -H "Content-Type: application/json" -d "{\"index\":{\"fields\":[{\"size\":\"desc\"},{\"docType\":\"desc\"},{\"owner\":\"desc\"}]},\"ddoc\":\"indexSizeSortDoc\", \"name\":\"indexSizeSortDesc\",\"type\":\"json\"}" http://hostname:port/myc1_assets/_index
+
+// Rich Query with index design doc and index name specified (Only supported if CouchDB is used as state database):
+//   peer chaincode query -C CHANNEL_NAME -n ledger -c '{"Args":["QueryAssets","{\"selector\":{\"docType\":\"asset\",\"owner\":\"Tom\"}, \"use_index\":[\"_design/indexOwnerDoc\", \"indexOwner\"]}"]}'
+
+// Rich Query with index design doc specified only (Only supported if CouchDB is used as state database):
+//   peer chaincode query -C CHANNEL_NAME -n ledger -c '{"Args":["QueryAssets","{\"selector\":{\"docType\":{\"$eq\":\"asset\"},\"owner\":{\"$eq\":\"Tom\"},\"size\":{\"$gt\":0}},\"fields\":[\"docType\",\"owner\",\"size\"],\"sort\":[{\"size\":\"desc\"}],\"use_index\":\"_design/indexSizeSortDoc\"}"]}'
+
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
 import stringify from "json-stringify-deterministic";
 import sortKeysRecursive from "sort-keys-recursive";
-import { Asset, StudentMeta } from "./asset";
+import { Asset, StudentMeta, GeneralSubjects } from "./asset";
 
 @Info({
   title: "AssetTransfer",
-  description: "Smart contract for trading assets",
+  description: "Smart Contract for asset transfer ledger sample",
 })
 export class AssetTransferContract extends Contract {
+  @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
     const assets: Asset[] = [
       {
@@ -23,7 +91,11 @@ export class AssetTransferContract extends Contract {
         OwnerId: "stu20231001",
         DocHash:
           "a1f1d3e4c5b6a7e8d9c0f1e2b3c4d5a6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+        DocSignature:
+          "3045022100c7d8e9fa0b1c2d3e4f5a6b7c8d9eaf0b1c2d3e4f5a6b7c8d9eaf0b1c2d3e4f022067890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345",
         Status: "approved",
+        Doc_URL:
+          "https://8920485d1a083bb2d3854bbe524817d7.ipfscdn.io/ipfs/bafybeiceuovridggjanp2imgcvihe4hfftmmgricm6jfz4wkpmh6ceuarq/52a8985b4fa6350cbb2e869b89abd4e0",
         MetaData: [
           {
             name: "Sokha Meas",
@@ -34,53 +106,13 @@ export class AssetTransferContract extends Contract {
             overall_grade: "A",
           },
         ],
-      },
-      {
-        ID: "trx100002",
-        IssueDate: "2025-04-28",
-        Issuer: "National Institute of Management",
-        OwnerId: "stu20231002",
-        DocHash:
-          "d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4",
-        Status: "approved",
-        MetaData: [
-          {
-            name: "Rithy Chan",
-            sex: "Male",
-            dob: "2001-07-22",
-            major: "Business Administration",
-            gpa: 3.65,
-            overall_grade: "B+",
-          },
-        ],
-      },
-      {
-        ID: "trx100003",
-        IssueDate: "2025-04-15",
-        Issuer: "Cambodia Science and Tech University",
-        OwnerId: "stu20231003",
-        DocHash:
-          "e1f2d3c4b5a6f7e8d9c0f1e2b3c4d5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2",
-        Status: "revoked",
-        MetaData: [
-          {
-            name: "Linda Phan",
-            sex: "Female",
-            dob: "2000-12-01",
-            major: "Civil Engineering",
-            gpa: 2.9,
-            overall_grade: "C",
-          },
-        ],
+        GeneralSubject: [],
       },
     ];
 
     for (const asset of assets) {
       asset.docType = "certificate";
-      // example of how to write to world state deterministically
-      // use convetion of alphabetic order
-      // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-      // when retrieving data, in any lang, the order of data will be the same and consequently also the corresonding hash
+
       await ctx.stub.putState(
         asset.ID,
         Buffer.from(stringify(sortKeysRecursive(asset)))
@@ -88,9 +120,67 @@ export class AssetTransferContract extends Contract {
       console.info(`Asset ${asset.ID} initialized`);
     }
   }
+  // In the smart contract, modify CreateAsset to return the created asset
+  @Transaction()
+  public async CreateAsset(
+    ctx: Context,
+    id: string,
+    issuer: string,
+    issue_date: string,
+    owner_id: string,
+    doc_hash: string,
+    doc_url: string,
+    doc_signature: string,
+    status: string,
+    metadata_json: string,
+    general_subject: string,
+    docType: string
+  ): Promise<string> {
+    // Change return type to string
+    const exists = await this.AssetExistsByDocHash(ctx, doc_hash);
+    if (exists) {
+      throw new Error(`The asset ${id} already exists`);
+    }
 
-  // GetAllAssets returns all assets found in the world state.
+    // Parse the metadata from JSON string and ensure it's in an array
+    const metadataObj = JSON.parse(metadata_json) as StudentMeta;
+    const generalSubjectObj = JSON.parse(general_subject) as GeneralSubjects;
 
+    // If metadata is not already an array, put it in an array
+    const metadataArray = Array.isArray(metadataObj)
+      ? metadataObj
+      : [metadataObj];
+
+    const generalSubjectArray = Array.isArray(generalSubjectObj)
+      ? generalSubjectObj
+      : [generalSubjectObj];
+
+    const asset = {
+      ID: id,
+      Issuer: issuer,
+      IssueDate: issue_date,
+      OwnerId: owner_id,
+      DocHash: doc_hash,
+      Doc_URL: doc_url,
+      DocSignature: doc_signature,
+      Status: status || "approved",
+      MetaData: metadataArray,
+      GeneralSubject: generalSubjectArray,
+      docType: docType,
+    };
+
+    await ctx.stub.putState(
+      id,
+      Buffer.from(stringify(sortKeysRecursive(asset)))
+    );
+
+    // Return the created asset as a JSON string
+    return stringify(sortKeysRecursive(asset));
+  }
+
+  //
+  @Transaction(false)
+  @Returns("string")
   public async GetAllAssets(ctx: Context): Promise<string> {
     const allResults = [];
     const iterator = await ctx.stub.getStateByRange("", "");
@@ -112,76 +202,93 @@ export class AssetTransferContract extends Contract {
     return JSON.stringify(allResults);
   }
 
-  // CreateAsset issues a new asset to the world state with given details.
-  public async CreateAsset(
+  @Transaction(false)
+  public async QueryAssetsByStatus(
     ctx: Context,
-    id: string,
-    issuer: string,
-    issue_date: string,
-    owner_id: string,
-    doc_hash: string,
     status: string,
-    metadata_json: string
-  ): Promise<void> {
-    const exists = await this.AssetExists(ctx, id);
-    if (exists) {
-      throw new Error(`The asset ${id} already exists`);
+    docType?: string
+  ): Promise<string> {
+    // Use the exact same pattern as AssetExistsByDocHash
+    const queryString = JSON.stringify({
+      selector: {
+        docType: docType,
+        Status: status,
+      },
+    });
+
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const allResults = [];
+
+    try {
+      let result = await iterator.next();
+      while (!result.done) {
+        const strValue = Buffer.from(result.value.value.toString()).toString(
+          "utf8"
+        );
+
+        try {
+          const record = JSON.parse(strValue) as Asset;
+          allResults.push(record);
+        } catch (err) {
+          console.log(err);
+          allResults.push(strValue);
+        }
+
+        result = await iterator.next();
+      }
+    } finally {
+      await iterator.close();
     }
 
-    // Parse the metadata from JSON string and ensure it's in an array
-    const metadataObj = JSON.parse(metadata_json) as StudentMeta;
-
-    // If metadata is not already an array, put it in an array
-    const metadataArray = Array.isArray(metadataObj)
-      ? metadataObj
-      : [metadataObj];
-
-    const asset = {
-      ID: id,
-      Issuer: issuer,
-      IssueDate: issue_date,
-      OwnerId: owner_id,
-      DocHash: doc_hash,
-      Status: status || "approved",
-      MetaData: metadataArray,
-    };
-
-    await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(asset)))
-    );
+    return JSON.stringify(allResults);
   }
 
-  // verification function
-  public async VerifyAsset(
+  @Transaction(false)
+  public async QueryAssetsByStudentName(
     ctx: Context,
-    id: string,
-    docHash: string
-  ): Promise<boolean> {
-    // Check if asset exists
-    const exists = await this.AssetExists(ctx, id);
-    if (!exists) {
-      throw new Error(`The asset ${id} does not exist`);
+    name: string
+  ): Promise<string> {
+    // Option 1: Query using a more general approach
+    const queryString = JSON.stringify({
+      selector: {
+        MetaData: {
+          $elemMatch: {
+            name: name,
+          },
+        },
+        // Status: 'approved',
+      },
+    });
+
+    const allResults = [];
+    const iterator = await ctx.stub.getQueryResult(queryString);
+
+    try {
+      let result = await iterator.next();
+      while (!result.done) {
+        const strValue = Buffer.from(result.value.value.toString()).toString(
+          "utf8"
+        );
+
+        let record;
+        try {
+          record = JSON.parse(strValue) as Asset;
+        } catch (err) {
+          console.log(err);
+          record = strValue;
+        }
+        allResults.push(record);
+        result = await iterator.next();
+      }
+    } finally {
+      await iterator.close();
     }
 
-    // Get the asset from the ledger
-    const assetData = await ctx.stub.getState(id);
-    if (assetData.length === 0) {
-      throw new Error(`Failed to get asset: ${id}`);
-    }
-
-    // Deserialize the asset data from buffer to JSON object
-    const asset = JSON.parse(assetData.toString()) as Asset;
-
-    // Compare the input appraised value with the value from the ledger
-    if (docHash === asset.DocHash) {
-      return true;
-    } else {
-      return false;
-    }
+    return JSON.stringify(allResults);
   }
 
-  // ReadAsset returns the asset stored in the world state with given id.
+  // Query by trx id
+  @Transaction(false)
   public async ReadAsset(ctx: Context, id: string): Promise<string> {
     const assetJSON = await ctx.stub.getState(id);
     if (assetJSON.length === 0) {
@@ -190,107 +297,166 @@ export class AssetTransferContract extends Contract {
     return assetJSON.toString();
   }
 
-  // UpdateAsset updates an existing asset in the world state with provided parameters.
-  public async UpdateAsset(
+  // verifying  process
+  @Transaction(false)
+  @Returns("string")
+  public async AssetExistsByDocHash(
     ctx: Context,
-    id: string,
-    issuer: string,
-    issue_date: string,
-    owner_id: string,
-    doc_hash: string,
-    status: string,
-    metadata_json: string
-  ): Promise<void> {
-    // Check if the asset exists
-    const exists = await this.AssetExists(ctx, id);
+    doc_hash: string
+  ): Promise<boolean> {
+    // Validate input
+    if (!doc_hash || doc_hash.trim() === "") {
+      return false;
+    }
+
+    const queryString = JSON.stringify({
+      selector: {
+        DocHash: doc_hash,
+      },
+    });
+
+    // Execute the query
+    const iterator = await ctx.stub.getQueryResult(queryString);
+
+    try {
+      // Check if any result exists
+      const result = await iterator.next();
+      return !result.done;
+    } finally {
+      await iterator.close();
+    }
+  }
+
+  // verifying the doc by its hash
+  @Transaction(false)
+  @Returns("string")
+  public async VerifyAsset(ctx: Context, doc_hash: string): Promise<string> {
+    const queryString = JSON.stringify({
+      selector: {
+        DocHash: doc_hash,
+      },
+    });
+
+    // Execute the query
+    const iterator = await ctx.stub.getQueryResult(queryString);
+
+    try {
+      // Get the first result
+      const result = await iterator.next();
+
+      if (result.done) {
+        // No asset found
+        return JSON.stringify({
+          exists: false,
+          data: null,
+        });
+      }
+
+      const asset = JSON.parse(result.value.value.toString()) as Asset;
+
+      // Check if there are more results (there shouldn't be for a unique doc_hash)
+      const nextResult = await iterator.next();
+      if (!nextResult.done) {
+        // Multiple assets found with same doc_hash - this indicates a data integrity issue
+        throw new Error(`Multiple assets found with doc_hash: ${doc_hash}`);
+      }
+
+      return JSON.stringify({
+        exists: true,
+        data: asset,
+      });
+    } finally {
+      await iterator.close();
+    }
+  }
+
+  // Query by owner
+  @Transaction(false)
+  public async QueryAssetsByOwner(
+    ctx: Context,
+    ownerId: string
+  ): Promise<string> {
+    const queryString = JSON.stringify({
+      selector: {
+        OwnerId: ownerId,
+      },
+    });
+    return await this.getQueryResultForQueryString(ctx, queryString);
+  }
+
+  // Revoked Document In Case the document is fault
+  @Transaction()
+  @Returns("string")
+  public async RevokedAsset(ctx: Context, id: string): Promise<string> {
+    const exists = await this.ReadAsset(ctx, id);
+
     if (!exists) {
       throw new Error(`The asset ${id} does not exist`);
     }
 
-    // Parse the metadata from JSON string
-    let metadataObj;
-    try {
-      metadataObj = JSON.parse(metadata_json) as Asset;
-    } catch (error) {
-      throw new Error(
-        `Invalid metadata JSON format: ${(error as Error).message}`
-      );
+    const assetBytes = await ctx.stub.getState(id);
+    if (assetBytes.length === 0) {
+      throw new Error(`Asset ${id} exists but contains no data`);
     }
 
-    // Ensure metadata is in an array format
-    const metadataArray = Array.isArray(metadataObj)
-      ? metadataObj
-      : [metadataObj];
+    const assetString = assetBytes.toString();
+    if (!assetString.trim()) {
+      throw new Error(`Asset ${id} contains empty string data`);
+    }
 
-    // Create the asset object with the updated values
-    const asset = {
-      ID: id,
-      Issuer: issuer,
-      IssueDate: issue_date,
-      OwnerId: owner_id,
-      DocHash: doc_hash,
-      Status: status || "approved",
-      MetaData: metadataArray,
-    };
+    let currentAsset: Asset;
+    try {
+      currentAsset = JSON.parse(assetString) as Asset;
+    } catch (parseError) {
+      console.error(`JSON parse error for asset ${id}:`, parseError);
+      console.error(`Raw data that failed to parse:`, assetString);
+      throw new Error(`Invalid JSON data in asset ${id}`);
+    }
 
-    // Get the existing asset to merge only the changed fields
-    const assetBuffer = await ctx.stub.getState(id);
-    const existingAsset = JSON.parse(assetBuffer.toString()) as Asset;
+    if (currentAsset.Status === "revoked") {
+      throw new Error(`Asset ${id} is already revoked`);
+    }
 
-    // Create updated asset by merging the existing asset with new values
+    // Update the asset with revoked status
     const updatedAsset = {
-      ...existingAsset,
-      ...asset,
+      ...currentAsset,
+      Status: "revoked",
     };
 
-    // Update the asset in the ledger
+    // Store the updated asset
     await ctx.stub.putState(
       id,
       Buffer.from(stringify(sortKeysRecursive(updatedAsset)))
     );
+
+    return JSON.stringify(updatedAsset);
   }
 
-  // DeleteAsset deletes an given asset from the world state.
-  public async DeleteAsset(ctx: Context, id: string): Promise<void> {
-    const exists = await this.AssetExists(ctx, id);
-    if (!exists) {
-      throw new Error(`The asset ${id} does not exist`);
+  // ------Helper function------- //
+  private async getQueryResultForQueryString(
+    ctx: Context,
+    queryString: string
+  ): Promise<string> {
+    const iterator = await ctx.stub.getQueryResult(queryString);
+    const allResults = [];
+    let result = await iterator.next();
+
+    while (!result.done) {
+      const strValue = Buffer.from(result.value.value.toString()).toString(
+        "utf8"
+      );
+      let record;
+      try {
+        record = JSON.parse(strValue) as Asset;
+      } catch (err) {
+        console.log(err);
+        record = strValue;
+      }
+      allResults.push(record);
+      result = await iterator.next();
     }
-    return ctx.stub.deleteState(id);
-  }
 
-  public async AssetExists(ctx: Context, id: string): Promise<boolean> {
-    const assetJSON = await ctx.stub.getState(id);
-    return assetJSON.length > 0;
-  }
-
-  // Revoke Doc
-  public async RevokeAsset(ctx: Context, doc_hash: string): Promise<void> {
-    // Check if the document exists by its hash
-    const assetJSON = await ctx.stub.getState(doc_hash);
-    if (assetJSON.length === 0) {
-      throw new Error(`The document with hash ${doc_hash} is not found`);
-    }
-
-    // Parse the existing asset
-    const existingAsset = JSON.parse(assetJSON.toString()) as Asset;
-
-    // Update only the status while preserving all other fields
-    existingAsset.Status = "Revoked";
-
-    // Update the asset in the ledger
-    await ctx.stub.putState(
-      doc_hash,
-      Buffer.from(stringify(sortKeysRecursive(existingAsset)))
-    );
-  }
-
-  public async GetDocByOwner(ctx: Context, owner_id: string) {
-    const assetJSON = await ctx.stub.getState(owner_id);
-
-    if (assetJSON.length === 0) {
-      throw new Error(`User with ID ${owner_id} is not found`);
-    }
-    return assetJSON.toString();
+    await iterator.close();
+    return JSON.stringify(allResults);
   }
 }
